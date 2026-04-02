@@ -145,7 +145,7 @@ function buildBreadcrumbs(
  * All content operations use the configured contentDir and rootDir.
  */
 export function createKb(config: ResolvedKbConfig) {
-  const { contentDir, title, languages } = config;
+  const { contentDir, title, languages, base } = config;
 
   function getTree(): KnowledgeNode[] {
     return buildTree(contentDir, "");
@@ -163,7 +163,7 @@ export function createKb(config: ResolvedKbConfig) {
       const indexPath = path.join(contentDir, "index.md");
       const indexParsed = readMarkdownFile(indexPath);
       const rootHtml = indexParsed?.content
-        ? await renderMarkdown(indexParsed.content, "", languages)
+        ? await renderMarkdown(indexParsed.content, "", languages, base)
         : undefined;
       return {
         slug: "",
@@ -190,7 +190,7 @@ export function createKb(config: ResolvedKbConfig) {
       const indexParsed = readMarkdownFile(indexPath);
       const children = buildTree(fullPath, slug);
       const folderHtml = indexParsed?.content
-        ? await renderMarkdown(indexParsed.content, slug, languages)
+        ? await renderMarkdown(indexParsed.content, slug, languages, base)
         : undefined;
       return {
         slug,
@@ -212,7 +212,7 @@ export function createKb(config: ResolvedKbConfig) {
       const parsed = readMarkdownFile(mdPath);
       if (!parsed) return null;
 
-      const html = await renderMarkdown(parsed.content, slug, languages);
+      const html = await renderMarkdown(parsed.content, slug, languages, base);
       return {
         slug,
         name:

@@ -22,6 +22,7 @@ export async function renderMarkdown(
   content: string,
   slug: string,
   languages: string[],
+  base = "",
 ): Promise<string> {
   const highlighter = await getHighlighter(languages);
 
@@ -86,7 +87,7 @@ export async function renderMarkdown(
       : slug + "/";
     html = html.replace(
       /(src|href)="\.\/([^"]+)"/g,
-      (_, attr, relative) => `${attr}="/${dir}${relative}"`,
+      (_, attr, relative) => `${attr}="${base}/${dir}${relative}"`,
     );
   }
 

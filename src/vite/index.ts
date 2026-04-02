@@ -25,12 +25,12 @@ const CLIENT_SCRIPTS = ["sidebar.ts", "mermaid.ts", "outline.ts"];
  * In dev, paths point to source files served by Vite.
  * In build, paths are replaced with the bundled asset filenames.
  */
-function getHtmlShell(assetRefs: { css: string; js: string }): string {
+function getHtmlShell(assetRefs: { css: string; js: string }, base = ""): string {
   return `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />${base ? `\n    <meta name="kb-base" content="${base}" />` : ""}
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -92,11 +92,12 @@ function renderFullPage(
   data: ContentData,
   slug: string,
   htmlShell: string,
+  base = "",
 ): string {
   const node = data.pages.get(slug);
   if (!node) return "";
-  const body = renderPageBody(node);
-  const layout = renderLayout(data.tree, data.rootName, slug, body);
+  const body = renderPageBody(node, base);
+  const layout = renderLayout(data.tree, data.rootName, slug, body, base);
   return htmlShell.replace("<!--kb-content-->", layout);
 }
 
@@ -109,6 +110,7 @@ function renderFullPage(
 export function kb(userConfig?: KbConfig): Plugin[] {
   let rootDir: string;
   let contentData: ContentData;
+  let base = "";
 
   // Single JS entry that imports CSS and all client scripts.
   // Vite bundles this in library mode → one JS file + one CSS file.
@@ -124,7 +126,11 @@ export function kb(userConfig?: KbConfig): Plugin[] {
     name: "kb:content",
 
     config() {
+      const rawBase = userConfig?.base ?? "";
+      base = rawBase === "/" ? "" : rawBase.replace(/\/+$/, "");
+
       return {
+        ...(base ? { base: base + "/" } : {}),
         // Build the virtual entry in library mode — produces bundled CSS + JS
         build: {
           rollupOptions: {
@@ -198,7 +204,7 @@ export function kb(userConfig?: KbConfig): Plugin[] {
       );
 
       // Dev HTML shell — references source files directly
-      const devShell = getHtmlShell({ css: devCssPath, js: devScripts[0] })
+      const devShell = getHtmlShell({ css: devCssPath, js: devScripts[0] }, base)
         .replace(
           "</body>",
           devScripts.slice(1).map((s) => `    <script type="module" src="${s}"></script>`).join("\n") + "\n  </body>",
@@ -207,15 +213,20 @@ export function kb(userConfig?: KbConfig): Plugin[] {
       // Serve pages via middleware
       server.middlewares.use(async (req, res, next) => {
         const url = req.url ?? "/";
-        const pathname = new URL(url, "http://localhost").pathname;
+        const rawPathname = new URL(url, "http://localhost").pathname;
 
         // Skip Vite internals
         if (
-          pathname.startsWith("/@") ||
-          pathname.startsWith("/node_modules")
+          rawPathname.startsWith("/@") ||
+          rawPathname.startsWith("/node_modules")
         ) {
           return next();
         }
+
+        // Strip base prefix for routing
+        const pathname = base && rawPathname.startsWith(base)
+          ? rawPathname.slice(base.length) || "/"
+          : rawPathname;
 
         // Serve content assets directly from the content directory
         if (ASSET_RE.test(pathname)) {
@@ -232,7 +243,7 @@ export function kb(userConfig?: KbConfig): Plugin[] {
 
         if (contentData.pages.has(slug)) {
           const transformed = await server.transformIndexHtml(url, devShell);
-          const html = renderFullPage(contentData, slug, transformed);
+          const html = renderFullPage(contentData, slug, transformed, base);
           res.setHeader("content-type", "text/html");
           res.end(html);
           return;
@@ -254,18 +265,18 @@ export function kb(userConfig?: KbConfig): Plugin[] {
       let cssFile = "";
       let jsFile = "";
       for (const [fileName, chunk] of Object.entries(bundle)) {
-        if (fileName.endsWith(".css")) cssFile = "/" + fileName;
+        if (fileName.endsWith(".css")) cssFile = base + "/" + fileName;
         if (fileName.endsWith(".js") && "isEntry" in chunk && chunk.isEntry) {
-          jsFile = "/" + fileName;
+          jsFile = base + "/" + fileName;
         }
       }
 
       // Generate the HTML shell with bundled asset references
-      const htmlShell = getHtmlShell({ css: cssFile, js: jsFile });
+      const htmlShell = getHtmlShell({ css: cssFile, js: jsFile }, base);
 
       // Generate HTML for every page
       for (const [slug] of contentData.pages) {
-        const html = renderFullPage(contentData, slug, htmlShell);
+        const html = renderFullPage(contentData, slug, htmlShell, base);
         const filePath =
           slug === ""
             ? path.join(outDir, "index.html")

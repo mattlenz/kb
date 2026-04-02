@@ -15,10 +15,14 @@ export function resolveConfig(
   rootDir: string,
   userConfig?: KbConfig,
 ): ResolvedKbConfig {
+  const rawBase = userConfig?.base ?? "";
+  const base = rawBase === "/" ? "" : rawBase.replace(/\/+$/, "");
+
   return {
     title: userConfig?.title ?? "Knowledge Base",
     contentDir: path.resolve(rootDir, userConfig?.contentDir ?? "docs"),
     rootDir,
+    base,
     languages: userConfig?.languages ?? DEFAULT_LANGUAGES,
   };
 }

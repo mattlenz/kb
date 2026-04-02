@@ -44,6 +44,20 @@ docs/
 
 Frontmatter supports `title`, `description`, and `children` (for custom ordering).
 
+## Deployment
+
+Set the `base` option when deploying to a subpath:
+
+```ts
+export default defineConfig({
+  base: "/repo-name",
+});
+```
+
+### GitHub Pages
+
+For project sites served at `username.github.io/repo-name/`, set `base` to your repo name and use the `actions/deploy-pages` workflow to publish the `dist/` output.
+
 ## Features
 
 - Sidebar navigation with collapsible folders

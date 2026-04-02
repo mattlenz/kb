@@ -1,4 +1,7 @@
-const currentSlug = window.location.pathname === "/" ? "" : window.location.pathname.slice(1);
+const baseMeta = document.querySelector<HTMLMetaElement>('meta[name="kb-base"]');
+const base = baseMeta?.content ?? "";
+const pathname = base ? window.location.pathname.replace(new RegExp(`^${base}`), "") : window.location.pathname;
+const currentSlug = pathname === "/" ? "" : pathname.replace(/\/$/, "").slice(1);
 
 // Expand ancestors of current page
 if (currentSlug) {

@@ -33,6 +33,8 @@ export interface KbConfig {
   title?: string;
   /** Path to content directory, relative to root. Default: "docs" */
   contentDir?: string;
+  /** Base path for deployment (e.g. "/repo-name" for GitHub Pages). Default: "" */
+  base?: string;
   /** Custom shiki languages to load. */
   languages?: string[];
 }
@@ -41,5 +43,6 @@ export interface ResolvedKbConfig {
   title: string;
   contentDir: string;
   rootDir: string;
+  base: string;
   languages: string[];
 }

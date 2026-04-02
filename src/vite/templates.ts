@@ -22,6 +22,7 @@ function renderSidebarTree(
   nodes: KnowledgeNode[],
   currentSlug: string,
   depth: number,
+  base: string,
 ): string {
   return nodes
     .map((node) => {
@@ -38,11 +39,11 @@ function renderSidebarTree(
           : `<span class="kb-tree-spacer"></span>`;
 
       const ariaCurrent = isActive ? ' aria-current="page"' : "";
-      const href = node.slug ? `/${esc(node.slug)}` : "/";
+      const href = node.slug ? `${base}/${esc(node.slug)}` : `${base}/`;
 
       const children =
         node.kind === "folder" && node.children
-          ? `<div data-children="${esc(node.slug)}"${isAncestor ? "" : " hidden"}>${renderSidebarTree(node.children, currentSlug, depth + 1)}</div>`
+          ? `<div data-children="${esc(node.slug)}"${isAncestor ? "" : " hidden"}>${renderSidebarTree(node.children, currentSlug, depth + 1, base)}</div>`
           : "";
 
       return `<div>
@@ -56,20 +57,20 @@ function renderSidebarTree(
     .join("");
 }
 
-function renderBreadcrumbs(breadcrumbs: Breadcrumb[]): string {
+function renderBreadcrumbs(breadcrumbs: Breadcrumb[], base: string): string {
   const ancestors = breadcrumbs?.slice(0, -1);
   if (!ancestors || ancestors.length === 0) return "";
 
   return `<nav class="kb-breadcrumbs">${ancestors
     .map(
       (crumb, i) =>
-        `<span>${i > 0 ? chevronBreadcrumb : ""}<a href="${crumb.slug ? `/${esc(crumb.slug)}` : "/"}">${esc(crumb.label)}</a></span>`,
+        `<span>${i > 0 ? chevronBreadcrumb : ""}<a href="${crumb.slug ? `${base}/${esc(crumb.slug)}` : `${base}/`}">${esc(crumb.label)}</a></span>`,
     )
     .join("")}</nav>`;
 }
 
-function renderPageHeader(node: KnowledgeNode): string {
-  const href = node.slug ? `/${esc(node.slug)}` : "/";
+function renderPageHeader(node: KnowledgeNode, base: string): string {
+  const href = node.slug ? `${base}/${esc(node.slug)}` : `${base}/`;
   const description = node.meta?.description
     ? `<p class="kb-description">${esc(node.meta.description)}</p>`
     : "";
@@ -90,10 +91,10 @@ function renderOutline(headings: Heading[]): string {
     .join("")}</nav>`;
 }
 
-function renderChildrenCards(nodes: KnowledgeNode[]): string {
+function renderChildrenCards(nodes: KnowledgeNode[], base: string): string {
   return `<div class="kb-children">${nodes
     .map((child) => {
-      const href = child.slug ? `/${esc(child.slug)}` : "/";
+      const href = child.slug ? `${base}/${esc(child.slug)}` : `${base}/`;
       const icon = child.kind === "folder" ? folderSvg : docSvg;
 
       return `<a href="${href}" class="kb-child-card">
@@ -106,7 +107,7 @@ function renderChildrenCards(nodes: KnowledgeNode[]): string {
     .join("")}</div>`;
 }
 
-export function renderPageBody(node: KnowledgeNode): string {
+export function renderPageBody(node: KnowledgeNode, base = ""): string {
   const hasOutline = node.headings && node.headings.length > 0;
   const hasChildren = node.children && node.children.length > 0;
 
@@ -115,19 +116,19 @@ export function renderPageBody(node: KnowledgeNode): string {
     : "";
 
   const children = hasChildren
-    ? renderChildrenCards(node.children!)
+    ? renderChildrenCards(node.children!, base)
     : "";
 
   const outline = hasOutline ? renderOutline(node.headings!) : "";
 
-  const breadcrumbs = renderBreadcrumbs(node.breadcrumbs ?? []);
+  const breadcrumbs = renderBreadcrumbs(node.breadcrumbs ?? [], base);
 
   return `<div class="kb-page">
   <div class="kb-safe">
     <article class="kb-content">
       ${breadcrumbs}
       <div class="kb-prose">
-        ${renderPageHeader(node)}
+        ${renderPageHeader(node, base)}
         ${prose}
         ${children}
       </div>
@@ -144,6 +145,7 @@ export function renderLayout(
   rootName: string,
   currentSlug: string,
   bodyHtml: string,
+  base = "",
 ): string {
   const rootNode: KnowledgeNode = {
     slug: "",
@@ -154,7 +156,7 @@ export function renderLayout(
 
   return `<div class="kb-layout">
   <nav class="kb-sidebar" id="sidebar">
-    ${renderSidebarTree([rootNode], currentSlug, 0)}
+    ${renderSidebarTree([rootNode], currentSlug, 0, base)}
   </nav>
   <div class="kb-main">
     ${bodyHtml}
