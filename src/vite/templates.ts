@@ -75,7 +75,6 @@ function renderPageHeader(node: KnowledgeNode): string {
     : "";
 
   return `<header class="kb-header">
-  ${renderBreadcrumbs(node.breadcrumbs ?? [])}
   <h1><a href="${href}">${esc(node.name)}</a></h1>
   ${description}
 </header>`;
@@ -121,14 +120,19 @@ export function renderPageBody(node: KnowledgeNode): string {
 
   const outline = hasOutline ? renderOutline(node.headings!) : "";
 
+  const breadcrumbs = renderBreadcrumbs(node.breadcrumbs ?? []);
+
   return `<div class="kb-page">
-  <article class="kb-content">
-    <div class="kb-content-inner">
-      ${renderPageHeader(node)}
-      ${prose}
-      ${children}
-    </div>
-  </article>
+  <div class="kb-safe">
+    <article class="kb-content">
+      ${breadcrumbs}
+      <div class="kb-prose">
+        ${renderPageHeader(node)}
+        ${prose}
+        ${children}
+      </div>
+    </article>
+  </div>
   <aside class="kb-outline-container">
     ${outline}
   </aside>
