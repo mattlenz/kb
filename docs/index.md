@@ -38,6 +38,7 @@ import { defineConfig } from "@mattlenz/kb";
 export default defineConfig({
   title: "My Knowledge Base",
   contentDir: "docs", // defaults to "docs" if it exists, otherwise "."
+  base: "/kb", // base path for subpath deployments
 });
 ```
 
@@ -56,17 +57,15 @@ Frontmatter supports `title`, `description`, and `children` (for custom ordering
 
 ## Deployment
 
-Set the `base` option when deploying to a subpath:
+Use `--base` when deploying to a subpath:
 
-```ts
-export default defineConfig({
-  base: "/repo-name",
-});
+```bash
+npx kb build --base /kb
 ```
 
 ### GitHub Pages
 
-For project sites served at `username.github.io/repo-name/`, set `base` to your repo name and use the `actions/deploy-pages` workflow to publish the `dist/` output.
+For project sites served at `username.github.io/repo-name/`, pass `--base` in your build step and use the `actions/deploy-pages` workflow to publish the `dist/` output.
 
 ## Features
 

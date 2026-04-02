@@ -13,11 +13,22 @@
 
 import fs from "node:fs";
 import path from "node:path";
+import { parseArgs } from "node:util";
 import { createKb, resolveConfig, loadConfigFile } from "../core/index";
 import { kb as kbPlugin } from "../vite/index";
 
-const args = process.argv.slice(2);
-const command = args[0];
+const { values, positionals } = parseArgs({
+  args: process.argv.slice(2),
+  options: {
+    base: { type: "string" },
+    port: { type: "string" },
+    "content-dir": { type: "string" },
+    help: { type: "boolean", short: "h" },
+  },
+  allowPositionals: true,
+});
+
+const command = positionals[0];
 
 function findRepoRoot(from: string): string {
   let dir = from;
@@ -33,12 +44,8 @@ function findRepoRoot(from: string): string {
   return from;
 }
 
-async function main() {
-  const cwd = process.cwd();
-  const rootDir = findRepoRoot(cwd);
-
-  if (!command || command === "help" || command === "--help") {
-    console.log(`
+function printHelp() {
+  console.log(`
   kb - Knowledge base CLI
 
   Commands:
@@ -47,24 +54,44 @@ async function main() {
     kb validate   Validate knowledge base content
 
   Options:
-    --help        Show this help message
+    --base <path>         Base path for deployment (e.g. /repo-name)
+    --port <number>       Dev server port (default: 5173)
+    --content-dir <path>  Content directory (default: docs or .)
+    -h, --help            Show this help message
 
   Configuration:
     Place a kb.config.ts in your repo root to configure.
-    `);
+  `);
+}
+
+async function main() {
+  if (!command || values.help) {
+    printHelp();
     process.exit(0);
   }
 
-  const userConfig = await loadConfigFile(rootDir);
+  const cwd = process.cwd();
+  const rootDir = findRepoRoot(cwd);
+
+  const fileConfig = await loadConfigFile(rootDir);
+
+  // CLI flags override config file values
+  const userConfig = {
+    ...fileConfig,
+    ...(values.base !== undefined && { base: values.base }),
+    ...(values["content-dir"] !== undefined && { contentDir: values["content-dir"] }),
+  };
 
   switch (command) {
     case "dev": {
       console.log(`[kb] Starting dev server from ${rootDir}`);
+      const port = values.port ? Number(values.port) : undefined;
       const { createServer } = await import("vite");
       const server = await createServer({
         root: rootDir,
         plugins: [kbPlugin(userConfig)],
         configFile: false,
+        ...(port !== undefined && { server: { port } }),
       });
       await server.listen();
       server.printUrls();
@@ -125,7 +152,7 @@ async function main() {
 
     default:
       console.error(`[kb] Unknown command: ${command}`);
-      console.error('  Run "kb help" for available commands');
+      console.error('  Run "kb --help" for available commands');
       process.exit(1);
   }
 }

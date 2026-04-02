@@ -25,7 +25,7 @@ jobs:
           node-version: 22
 
       - run: npm install
-      - run: npx tsx src/cli/index.ts build
+      - run: npx tsx src/cli/index.ts build --base /kb
 
       - uses: actions/upload-pages-artifact@v3
         with:
