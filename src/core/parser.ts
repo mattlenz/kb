@@ -3,19 +3,66 @@ import remarkGfm from "remark-gfm";
 import remarkRehype from "remark-rehype";
 import rehypeStringify from "rehype-stringify";
 import rehypeSlug from "rehype-slug";
-import { createHighlighter, type Highlighter } from "shiki";
+import rehypeShiki, { type RehypeShikiOptions } from "@shikijs/rehype";
+import type { Element, Root } from "hast";
+import { visit } from "unist-util-visit";
 import type { Heading } from "./types";
 
-let highlighterPromise: Promise<Highlighter> | null = null;
+/**
+ * Rehype plugin that extracts mermaid code blocks into client-side placeholders
+ * before Shiki tries to highlight them.
+ */
+function rehypeMermaid() {
+  return (tree: Root) => {
+    visit(tree, "element", (node: Element, index, parent) => {
+      if (
+        node.tagName !== "pre" ||
+        !parent ||
+        index === undefined
+      ) return;
 
-function getHighlighter(languages: string[]): Promise<Highlighter> {
-  if (!highlighterPromise) {
-    highlighterPromise = createHighlighter({
-      themes: ["github-light", "github-dark"],
-      langs: languages,
+      const code = node.children[0];
+      if (
+        !code ||
+        code.type !== "element" ||
+        code.tagName !== "code"
+      ) return;
+
+      const className = (code.properties?.className as string[]) ?? [];
+      if (!className.includes("language-mermaid")) return;
+
+      // Extract raw text from the code node
+      const raw = code.children
+        .filter((c): c is { type: "text"; value: string } => c.type === "text")
+        .map((c) => c.value)
+        .join("");
+
+      const encoded = raw
+        .replace(/&/g, "&amp;")
+        .replace(/"/g, "&quot;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+
+      // Replace the <pre> node with a mermaid placeholder div
+      (parent.children as Element[])[index] = {
+        type: "element",
+        tagName: "div",
+        properties: {
+          className: [
+            "mermaid-placeholder",
+            "animate-pulse",
+            "h-32",
+            "bg-neutral-100",
+            "dark:bg-neutral-900",
+            "rounded",
+            "my-4",
+          ],
+          dataChart: encoded,
+        },
+        children: [],
+      };
     });
-  }
-  return highlighterPromise;
+  };
 }
 
 export async function renderMarkdown(
@@ -24,52 +71,22 @@ export async function renderMarkdown(
   languages: string[],
   base = "",
 ): Promise<string> {
-  const highlighter = await getHighlighter(languages);
-
   const result = await remark()
     .use(remarkGfm)
-    // allowDangerousHtml passes through raw HTML in markdown source
     .use(remarkRehype, { allowDangerousHtml: true })
     .use(rehypeSlug)
+    .use(rehypeMermaid)
+    .use(rehypeShiki, {
+      themes: { light: "github-light", dark: "github-dark" },
+      langs: languages,
+    } as RehypeShikiOptions)
     .use(rehypeStringify, { allowDangerousHtml: true })
     .process(content);
 
   let html = String(result);
 
-  // Replace <code> blocks with shiki-highlighted versions
-  html = html.replace(
-    /<pre><code class="language-(\w+)">([\s\S]*?)<\/code><\/pre>/g,
-    (_, lang, code) => {
-      const decoded = code
-        .replace(/&#x([0-9a-fA-F]+);/g, (_: string, hex: string) => String.fromCodePoint(parseInt(hex, 16)))
-        .replace(/&#(\d+);/g, (_: string, dec: string) => String.fromCodePoint(Number(dec)))
-        .replace(/&amp;/g, "&")
-        .replace(/&lt;/g, "<")
-        .replace(/&gt;/g, ">")
-        .replace(/&quot;/g, '"')
-        .replace(/&apos;/g, "'");
-
-      // Mermaid blocks become client-side placeholders
-      if (lang === "mermaid") {
-        const encoded = decoded
-          .replace(/&/g, "&amp;")
-          .replace(/"/g, "&quot;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;");
-        return `<div class="mermaid-placeholder animate-pulse h-32 bg-neutral-100 dark:bg-neutral-900 rounded my-4" data-chart="${encoded}"></div>`;
-      }
-
-      try {
-        const shikiHtml = highlighter.codeToHtml(decoded, {
-          lang,
-          themes: { light: "github-light", dark: "github-dark" },
-        });
-        return shikiHtml.replace(/background-color:[^;"]+;?/g, "");
-      } catch {
-        return `<pre><code class="language-${lang}">${code}</code></pre>`;
-      }
-    },
-  );
+  // Strip shiki background-color so our theme controls it
+  html = html.replace(/background-color:[^;"]+;?/g, "");
 
   // Wrap tables in a scrollable container
   html = html.replace(/<table>/g, '<div class="table-wrapper"><table>');
