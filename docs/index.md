@@ -1,6 +1,7 @@
-# kb
-
-A markdown knowledge base static site generator powered by Vite.
+---
+title: kb
+description: A markdown knowledge base static site generator powered by Vite.
+---
 
 Drop markdown files in a `docs/` directory and get a fully rendered site with sidebar navigation, syntax highlighting, and mermaid diagrams.
 

@@ -13,7 +13,9 @@
     "./cli": "./src/cli/index.ts"
   },
   "scripts": {
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "dev": "kb dev",
+    "build": "kb build"
   },
   "dependencies": {
     "gray-matter": "^4.0.3",
