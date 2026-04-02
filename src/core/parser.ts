@@ -37,13 +37,8 @@ function rehypeMermaid() {
         .map((c) => c.value)
         .join("");
 
-      const encoded = raw
-        .replace(/&/g, "&amp;")
-        .replace(/"/g, "&quot;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
-
       // Replace the <pre> node with a mermaid placeholder div
+      // rehypeStringify handles attribute encoding, so use raw text directly
       (parent.children as Element[])[index] = {
         type: "element",
         tagName: "div",
@@ -57,7 +52,7 @@ function rehypeMermaid() {
             "rounded",
             "my-4",
           ],
-          dataChart: encoded,
+          dataChart: raw,
         },
         children: [],
       };
@@ -99,11 +94,14 @@ export async function renderMarkdown(
       `<figure><img${before} alt="${alt}"${after}><figcaption>${alt}</figcaption></figure>`,
   );
 
-  // Rewrite relative URLs so they resolve correctly
-  if (slug) {
-    const dir = slug.includes("/")
-      ? slug.substring(0, slug.lastIndexOf("/") + 1)
-      : slug + "/";
+  // Rewrite relative URLs so they resolve correctly.
+  // Use the directory portion of the slug (e.g. "guides/deployment" → "guides/")
+  // so that ./image.jpg resolves relative to the page's sibling files.
+  // Root-level slugs like "example" have no directory prefix.
+  const dir = slug.includes("/")
+    ? slug.substring(0, slug.lastIndexOf("/") + 1)
+    : "";
+  if (dir || base) {
     html = html.replace(
       /(src|href)="\.\/([^"]+)"/g,
       (_, attr, relative) => `${attr}="${base}/${dir}${relative}"`,
