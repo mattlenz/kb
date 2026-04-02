@@ -1,0 +1,8 @@
+docs/
+dist/
+screenshots/
+scripts/
+.github/
+.claude/
+*.tsbuildinfo
+.DS_Store
