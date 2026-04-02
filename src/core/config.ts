@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import path from "node:path";
 import type { KbConfig, ResolvedKbConfig } from "./types";
 
@@ -6,6 +7,12 @@ const DEFAULT_LANGUAGES = [
   "yaml", "markdown", "css", "html", "python", "go", "rust", "sql",
   "graphql", "diff", "toml",
 ];
+
+function inferContentDir(rootDir: string): string {
+  const docsDir = path.join(rootDir, "docs");
+  if (fs.existsSync(docsDir)) return "docs";
+  return ".";
+}
 
 export function defineConfig(config: KbConfig): KbConfig {
   return config;
@@ -20,7 +27,7 @@ export function resolveConfig(
 
   return {
     title: userConfig?.title ?? "Knowledge Base",
-    contentDir: path.resolve(rootDir, userConfig?.contentDir ?? "docs"),
+    contentDir: path.resolve(rootDir, userConfig?.contentDir ?? inferContentDir(rootDir)),
     rootDir,
     base,
     languages: userConfig?.languages ?? DEFAULT_LANGUAGES,

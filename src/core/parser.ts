@@ -41,11 +41,13 @@ export async function renderMarkdown(
     /<pre><code class="language-(\w+)">([\s\S]*?)<\/code><\/pre>/g,
     (_, lang, code) => {
       const decoded = code
+        .replace(/&#x([0-9a-fA-F]+);/g, (_: string, hex: string) => String.fromCodePoint(parseInt(hex, 16)))
+        .replace(/&#(\d+);/g, (_: string, dec: string) => String.fromCodePoint(Number(dec)))
         .replace(/&amp;/g, "&")
         .replace(/&lt;/g, "<")
         .replace(/&gt;/g, ">")
         .replace(/&quot;/g, '"')
-        .replace(/&#39;/g, "'");
+        .replace(/&apos;/g, "'");
 
       // Mermaid blocks become client-side placeholders
       if (lang === "mermaid") {

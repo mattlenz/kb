@@ -2,20 +2,29 @@
 
 A markdown knowledge base static site generator powered by Vite.
 
-Drop markdown files in a `docs/` directory and get a fully rendered site with sidebar navigation, syntax highlighting, and mermaid diagrams.
+Drop markdown files in a directory and get a fully rendered site with sidebar navigation, syntax highlighting, and mermaid diagrams.
+
+## Quick start
+
+```bash
+mkdir kb-example
+cd kb-example
+echo "# Hello" > index.md
+npx github:mattlenz/kb dev
+```
 
 ## Install
 
 ```bash
-npm install @mattlenz/kb
+npm install github:mattlenz/kb
 ```
 
 ## Usage
 
 ```bash
-kb dev       # Start dev server
-kb build     # Build static site to dist/
-kb validate  # Validate all pages
+npx kb dev       # Start dev server
+npx kb build     # Build static site to dist/
+npx kb validate  # Validate all pages
 ```
 
 ## Configuration
@@ -27,7 +36,7 @@ import { defineConfig } from "@mattlenz/kb";
 
 export default defineConfig({
   title: "My Knowledge Base",
-  contentDir: "docs",
+  contentDir: "docs", // defaults to "docs" if it exists, otherwise "."
 });
 ```
 

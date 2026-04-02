@@ -31,7 +31,7 @@ export interface KnowledgeNode {
 export interface KbConfig {
   /** Site/knowledge base title. */
   title?: string;
-  /** Path to content directory, relative to root. Default: "docs" */
+  /** Path to content directory, relative to root. Default: "docs" if it exists, otherwise "." */
   contentDir?: string;
   /** Base path for deployment (e.g. "/repo-name" for GitHub Pages). Default: "" */
   base?: string;
