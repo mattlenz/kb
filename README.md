@@ -2,7 +2,7 @@
 
 A markdown knowledge base static site generator powered by Vite.
 
-Drop markdown files in a `docs/` directory and get a fully rendered site with sidebar navigation, syntax highlighting, mermaid diagrams, and git-derived metadata.
+Drop markdown files in a `docs/` directory and get a fully rendered site with sidebar navigation, syntax highlighting, and mermaid diagrams.
 
 ## Install
 
@@ -55,14 +55,12 @@ docs/
     deployment.md
 ```
 
-Frontmatter supports `title`, `description`, `author`, and `children` (for custom ordering).
+Frontmatter supports `title`, `description`, and `children` (for custom ordering).
 
 ## Features
 
 - Sidebar navigation with collapsible folders
 - Syntax highlighting via Shiki (light/dark themes)
 - Mermaid diagram rendering
-- Git-derived author, created, and updated dates
-- Gravatar avatars from git email
 - GFM (tables, strikethrough, autolinks)
 - Static build for deployment anywhere
