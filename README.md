@@ -4,6 +4,10 @@ A markdown knowledge base static site generator powered by Vite.
 
 Drop markdown files in a directory and get a fully rendered site with sidebar navigation, syntax highlighting, and mermaid diagrams.
 
+| Light | Dark |
+|-------|------|
+| ![Light mode](screenshots/light.png) | ![Dark mode](screenshots/dark.png) |
+
 ## Quick start
 
 ```bash
