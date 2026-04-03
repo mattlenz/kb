@@ -1,4 +1,6 @@
+import crypto from "node:crypto";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Plugin, ViteDevServer } from "vite";
@@ -140,6 +142,8 @@ export function kb(userConfig?: KbConfig): Plugin[] {
 
       return {
         ...(base ? { base: base + "/" } : {}),
+        // Keep Vite's cache out of the user's project directory
+        cacheDir: path.join(os.tmpdir(), "kb-vite-" + crypto.createHash("md5").update(process.cwd()).digest("hex").slice(0, 8)),
         // Build the virtual entry in library mode — produces bundled CSS + JS
         build: {
           rollupOptions: {
