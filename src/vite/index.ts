@@ -58,30 +58,39 @@ function copyAssets(dir: string, relativeDir: string, destDir: string) {
   }
 }
 
-interface ContentData {
+interface TreeData {
   tree: KnowledgeNode[];
   rootName: string;
-  pages: Map<string, KnowledgeNode>;
+  slugs: Set<string>;
 }
 
-async function buildContent(
+function buildTreeData(
   rootDir: string,
   userConfig?: KbConfig,
-): Promise<ContentData> {
+): TreeData {
   const config = resolveConfig(rootDir, userConfig);
   const kb = createKb(config);
 
   const tree = kb.getTree();
   const rootMeta = kb.getRootMeta();
-  const slugs = [...new Set(kb.getAllSlugs())];
-  const pages = new Map<string, KnowledgeNode>();
+  const slugs = new Set(kb.getAllSlugs());
 
-  for (const slug of slugs) {
-    const node = await kb.getNode(slug);
-    if (node) pages.set(slug, node);
-  }
+  return { tree, rootName: rootMeta.name, slugs };
+}
 
-  return { tree, rootName: rootMeta.name, pages };
+/**
+ * Map a filesystem path back to a content slug for cache invalidation.
+ * Returns null if the path is not inside contentDir.
+ */
+function fileToSlug(filePath: string, contentDir: string): string | null {
+  if (!filePath.startsWith(contentDir)) return null;
+  let rel = filePath.slice(contentDir.length).replace(/^\/+/, "");
+  // index.md → parent folder slug
+  if (rel === "index.md") return "";
+  if (rel.endsWith("/index.md")) rel = rel.slice(0, -"/index.md".length);
+  else if (rel.endsWith(".md")) rel = rel.slice(0, -".md".length);
+  else return null; // non-markdown file
+  return rel;
 }
 
 /** File-extension pattern for knowledge assets */
@@ -89,15 +98,13 @@ const ASSET_RE =
   /\.(png|jpe?g|gif|svg|webp|ico|bmp|avif|pdf|mp4|webm|ogg|mp3|wav|woff2?|ttf|eot|zip|tar|gz|csv|xlsx?|docx?|pptx?)$/i;
 
 function renderFullPage(
-  data: ContentData,
-  slug: string,
+  treeData: TreeData,
+  node: KnowledgeNode,
   htmlShell: string,
   base = "",
 ): string {
-  const node = data.pages.get(slug);
-  if (!node) return "";
   const body = renderPageBody(node, base);
-  const layout = renderLayout(data.tree, data.rootName, slug, body, base);
+  const layout = renderLayout(treeData.tree, treeData.rootName, node.slug, body, base);
   return htmlShell.replace("<!--kb-content-->", layout);
 }
 
@@ -109,8 +116,10 @@ function renderFullPage(
  */
 export function kb(userConfig?: KbConfig): Plugin[] {
   let rootDir: string;
-  let contentData: ContentData;
+  let treeData: TreeData;
   let base = "";
+  /** On-demand page cache — populated by middleware, invalidated by watcher. */
+  const pageCache = new Map<string, KnowledgeNode>();
 
   // Single JS entry that imports CSS and all client scripts.
   // Vite bundles this in library mode → one JS file + one CSS file.
@@ -163,34 +172,83 @@ export function kb(userConfig?: KbConfig): Plugin[] {
 
     async buildStart() {
       console.log("[kb] Building knowledge base...");
-      contentData = await buildContent(rootDir, userConfig);
-      console.log(`[kb] Built ${contentData.pages.size} pages`);
+      treeData = buildTreeData(rootDir, userConfig);
+      console.log(`[kb] Found ${treeData.slugs.size} pages`);
     },
 
     configureServer(server: ViteDevServer) {
       const config = resolveConfig(rootDir, userConfig);
+      const kb = createKb(config);
 
       // Watch the content directory for changes
       server.watcher.add(config.contentDir);
 
-      let rebuildTimeout: ReturnType<typeof setTimeout> | null = null;
-      const rebuild = () => {
-        if (rebuildTimeout) clearTimeout(rebuildTimeout);
-        rebuildTimeout = setTimeout(async () => {
-          console.log("[kb] Content changed, rebuilding...");
-          contentData = await buildContent(rootDir, userConfig);
+      // --- Concurrency guard ---
+      let rebuilding = false;
+      let pendingRebuild = false;
+
+      const rebuildTree = () => {
+        if (rebuilding) {
+          pendingRebuild = true;
+          return;
+        }
+        rebuilding = true;
+        console.log("[kb] Tree changed, rebuilding...");
+        treeData = buildTreeData(rootDir, userConfig);
+        pageCache.clear();
+        server.ws.send({ type: "full-reload" });
+        rebuilding = false;
+        if (pendingRebuild) {
+          pendingRebuild = false;
+          rebuildTree();
+        }
+      };
+
+      // --- Debounced handlers ---
+      let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+      let pendingInvalidations: { type: "change" | "structure"; file: string }[] = [];
+
+      const flush = () => {
+        const batch = pendingInvalidations;
+        pendingInvalidations = [];
+
+        const hasStructuralChange = batch.some((e) => e.type === "structure");
+
+        if (hasStructuralChange) {
+          // add/unlink: full tree rebuild (cheap) + clear page cache
+          rebuildTree();
+        } else {
+          // content-only changes: invalidate just those slugs
+          for (const event of batch) {
+            const slug = fileToSlug(event.file, config.contentDir);
+            if (slug !== null) {
+              pageCache.delete(slug);
+              console.log(`[kb] Invalidated: ${slug || "(root)"}`);
+            }
+          }
           server.ws.send({ type: "full-reload" });
-        }, 200);
+        }
+      };
+
+      const scheduleFlush = () => {
+        if (debounceTimer) clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(flush, 200);
       };
 
       server.watcher.on("change", (file: string) => {
-        if (file.startsWith(config.contentDir)) rebuild();
+        if (!file.startsWith(config.contentDir)) return;
+        pendingInvalidations.push({ type: "change", file });
+        scheduleFlush();
       });
       server.watcher.on("add", (file: string) => {
-        if (file.startsWith(config.contentDir)) rebuild();
+        if (!file.startsWith(config.contentDir)) return;
+        pendingInvalidations.push({ type: "structure", file });
+        scheduleFlush();
       });
       server.watcher.on("unlink", (file: string) => {
-        if (file.startsWith(config.contentDir)) rebuild();
+        if (!file.startsWith(config.contentDir)) return;
+        pendingInvalidations.push({ type: "structure", file });
+        scheduleFlush();
       });
 
       // Dev asset references — use /@fs/ prefix for absolute paths outside project root
@@ -241,12 +299,20 @@ export function kb(userConfig?: KbConfig): Plugin[] {
         const slug =
           pathname === "/" ? "" : pathname.replace(/\/$/, "").slice(1);
 
-        if (contentData.pages.has(slug)) {
-          const transformed = await server.transformIndexHtml(url, devShell);
-          const html = renderFullPage(contentData, slug, transformed, base);
-          res.setHeader("content-type", "text/html");
-          res.end(html);
-          return;
+        if (treeData.slugs.has(slug)) {
+          // On-demand rendering with cache
+          let node = pageCache.get(slug);
+          if (!node) {
+            node = await kb.getNode(slug) ?? undefined;
+            if (node) pageCache.set(slug, node);
+          }
+          if (node) {
+            const transformed = await server.transformIndexHtml(url, devShell);
+            const html = renderFullPage(treeData, node, transformed, base);
+            res.setHeader("content-type", "text/html");
+            res.end(html);
+            return;
+          }
         }
 
         next();
@@ -274,22 +340,28 @@ export function kb(userConfig?: KbConfig): Plugin[] {
       // Generate the HTML shell with bundled asset references
       const htmlShell = getHtmlShell({ css: cssFile, js: jsFile }, base);
 
-      // Generate HTML for every page
-      for (const [slug] of contentData.pages) {
-        const html = renderFullPage(contentData, slug, htmlShell, base);
+      // Build renders all pages eagerly for static output
+      const buildConfig = resolveConfig(rootDir, userConfig);
+      const buildKb = createKb(buildConfig);
+      let pageCount = 0;
+
+      for (const slug of treeData.slugs) {
+        const node = await buildKb.getNode(slug);
+        if (!node) continue;
+        const html = renderFullPage(treeData, node, htmlShell, base);
         const filePath =
           slug === ""
             ? path.join(outDir, "index.html")
             : path.join(outDir, slug, "index.html");
         fs.mkdirSync(path.dirname(filePath), { recursive: true });
         fs.writeFileSync(filePath, html);
+        pageCount++;
       }
 
       // Copy knowledge assets to output
-      const config = resolveConfig(rootDir, userConfig);
-      copyAssets(config.contentDir, "", outDir);
+      copyAssets(buildConfig.contentDir, "", outDir);
 
-      console.log(`[kb] Generated ${contentData.pages.size} static pages`);
+      console.log(`[kb] Generated ${pageCount} static pages`);
     },
   };
 
