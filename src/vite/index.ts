@@ -10,17 +10,12 @@ import {
   type KbConfig,
   type KnowledgeNode,
 } from "../core/index";
-import {
-  renderPageBody,
-  renderLayout,
-} from "./templates";
+import { renderPage, toTreeNodes, toPageData } from "./render";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Plugin-owned asset paths
-const STYLES_PATH = path.resolve(__dirname, "styles/global.css");
-const CLIENT_DIR = path.resolve(__dirname, "client");
-const CLIENT_SCRIPTS = ["sidebar.ts", "mermaid.ts", "outline.ts"];
+const ENTRY_PATH = path.resolve(__dirname, "client/entry.tsx");
 
 /**
  * Generate the HTML shell with references to bundled assets.
@@ -40,6 +35,7 @@ function getHtmlShell(assetRefs: { css: string; js: string }, base = ""): string
   </head>
   <body>
     <!--kb-content-->
+    <script type="application/json" id="kb-data"><!--kb-data--></script>
     <script type="module" src="${assetRefs.js}"></script>
   </body>
 </html>`;
@@ -103,11 +99,12 @@ function renderFullPage(
   treeData: TreeData,
   node: KnowledgeNode,
   htmlShell: string,
-  base = "",
+  basePath = "",
 ): string {
-  const body = renderPageBody(node, base);
-  const layout = renderLayout(treeData.tree, treeData.rootName, node.slug, body, base);
-  return htmlShell.replace("<!--kb-content-->", layout);
+  const { html, initialData } = renderPage(treeData, node, basePath);
+  return htmlShell
+    .replace("<!--kb-content-->", html)
+    .replace("<!--kb-data-->", JSON.stringify(initialData));
 }
 
 /**
@@ -123,12 +120,8 @@ export function kb(userConfig?: KbConfig): Plugin[] {
   /** On-demand page cache — populated by middleware, invalidated by watcher. */
   const pageCache = new Map<string, KnowledgeNode>();
 
-  // Single JS entry that imports CSS and all client scripts.
-  // Vite bundles this in library mode → one JS file + one CSS file.
-  const entrySource = [
-    `import "${STYLES_PATH}";`,
-    ...CLIENT_SCRIPTS.map((s) => `import "${path.join(CLIENT_DIR, s)}";`),
-  ].join("\n");
+  // Single JS entry that imports the Preact client app (CSS + components).
+  const entrySource = `import "${ENTRY_PATH}";`;
 
   const VIRTUAL_ENTRY = "virtual:kb-entry";
   const RESOLVED_ENTRY = "\0" + VIRTUAL_ENTRY;
@@ -187,27 +180,6 @@ export function kb(userConfig?: KbConfig): Plugin[] {
       // Watch the content directory for changes
       server.watcher.add(config.contentDir);
 
-      // --- Concurrency guard ---
-      let rebuilding = false;
-      let pendingRebuild = false;
-
-      const rebuildTree = () => {
-        if (rebuilding) {
-          pendingRebuild = true;
-          return;
-        }
-        rebuilding = true;
-        console.log("[kb] Tree changed, rebuilding...");
-        treeData = buildTreeData(rootDir, userConfig);
-        pageCache.clear();
-        server.ws.send({ type: "full-reload" });
-        rebuilding = false;
-        if (pendingRebuild) {
-          pendingRebuild = false;
-          rebuildTree();
-        }
-      };
-
       // --- Debounced handlers ---
       let debounceTimer: ReturnType<typeof setTimeout> | null = null;
       let pendingInvalidations: { type: "change" | "structure"; file: string }[] = [];
@@ -218,19 +190,37 @@ export function kb(userConfig?: KbConfig): Plugin[] {
 
         const hasStructuralChange = batch.some((e) => e.type === "structure");
 
+        // Always rebuild tree (cheap fs scan) — titles may have changed
+        treeData = buildTreeData(rootDir, userConfig);
+        server.ws.send({
+          type: "custom",
+          event: "kb:tree-update",
+          data: { tree: toTreeNodes(treeData.tree), rootName: treeData.rootName },
+        });
+
         if (hasStructuralChange) {
-          // add/unlink: full tree rebuild (cheap) + clear page cache
-          rebuildTree();
+          // add/unlink: clear entire page cache
+          pageCache.clear();
         } else {
-          // content-only changes: invalidate just those slugs
+          // content-only changes: invalidate and push updated page data
           for (const event of batch) {
             const slug = fileToSlug(event.file, config.contentDir);
             if (slug !== null) {
               pageCache.delete(slug);
               console.log(`[kb] Invalidated: ${slug || "(root)"}`);
+              // Re-render and push to client
+              kb.getNode(slug).then((node) => {
+                if (node) {
+                  pageCache.set(slug, node);
+                  server.ws.send({
+                    type: "custom",
+                    event: "kb:page-update",
+                    data: { slug, pageData: toPageData(node) },
+                  });
+                }
+              });
             }
           }
-          server.ws.send({ type: "full-reload" });
         }
       };
 
@@ -260,17 +250,10 @@ export function kb(userConfig?: KbConfig): Plugin[] {
         const rel = path.relative(rootDir, absPath);
         return rel.startsWith("..") ? "/@fs" + absPath : "/" + rel;
       };
-      const devCssPath = toDevUrl(STYLES_PATH);
-      const devScripts = CLIENT_SCRIPTS.map(
-        (s) => toDevUrl(path.join(CLIENT_DIR, s)),
-      );
+      const devEntryUrl = toDevUrl(ENTRY_PATH);
 
-      // Dev HTML shell — references source files directly
-      const devShell = getHtmlShell({ css: devCssPath, js: devScripts[0] }, base)
-        .replace(
-          "</body>",
-          devScripts.slice(1).map((s) => `    <script type="module" src="${s}"></script>`).join("\n") + "\n  </body>",
-        );
+      // Dev HTML shell — single entry point for Preact app
+      const devShell = getHtmlShell({ css: "", js: devEntryUrl }, base);
 
       // Serve pages via middleware
       server.middlewares.use(async (req, res, next) => {
@@ -297,6 +280,28 @@ export function kb(userConfig?: KbConfig): Plugin[] {
             return res.end(fs.readFileSync(assetPath));
           }
           return next();
+        }
+
+        // JSON API for client-side navigation
+        if (pathname.startsWith("/__kb_api/")) {
+          const apiSlug = pathname.slice("/__kb_api/".length).replace(/\.json$/, "");
+          const resolvedSlug = apiSlug === "_index" ? "" : apiSlug;
+
+          if (treeData.slugs.has(resolvedSlug)) {
+            let node = pageCache.get(resolvedSlug);
+            if (!node) {
+              node = await kb.getNode(resolvedSlug) ?? undefined;
+              if (node) pageCache.set(resolvedSlug, node);
+            }
+            if (node) {
+              res.setHeader("content-type", "application/json");
+              res.end(JSON.stringify(toPageData(node)));
+              return;
+            }
+          }
+          res.statusCode = 404;
+          res.end("{}");
+          return;
         }
 
         // Page routes
