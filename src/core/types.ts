@@ -20,7 +20,7 @@ export interface KnowledgeNode {
   kind: "folder" | "document";
   meta?: DocumentMeta;
   content?: string;
-  html?: string;
+  hast?: import("hast").Root;
   headings?: Heading[];
   children?: KnowledgeNode[];
   breadcrumbs?: Breadcrumb[];

@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
-import { renderMarkdown, extractHeadings } from "./parser";
+import { renderMarkdown } from "./parser";
 import type {
   DocumentMeta,
   Breadcrumb,
@@ -162,7 +162,7 @@ export function createKb(config: ResolvedKbConfig) {
     if (!slug) {
       const indexPath = path.join(contentDir, "index.md");
       const indexParsed = readMarkdownFile(indexPath);
-      const rootHtml = indexParsed?.content
+      const rendered = indexParsed?.content
         ? await renderMarkdown(indexParsed.content, "", languages, base)
         : undefined;
       return {
@@ -171,8 +171,8 @@ export function createKb(config: ResolvedKbConfig) {
         kind: "folder",
         meta: indexParsed?.meta,
         content: indexParsed?.content,
-        html: rootHtml,
-        headings: rootHtml ? extractHeadings(rootHtml) : undefined,
+        hast: rendered?.hast,
+        headings: rendered?.headings,
         children: getTree(),
         breadcrumbs: [],
       };
@@ -189,7 +189,7 @@ export function createKb(config: ResolvedKbConfig) {
       const indexPath = path.join(fullPath, "index.md");
       const indexParsed = readMarkdownFile(indexPath);
       const children = buildTree(fullPath, slug);
-      const folderHtml = indexParsed?.content
+      const rendered = indexParsed?.content
         ? await renderMarkdown(indexParsed.content, slug, languages, base)
         : undefined;
       return {
@@ -200,8 +200,8 @@ export function createKb(config: ResolvedKbConfig) {
         kind: "folder",
         meta: indexParsed?.meta,
         content: indexParsed?.content,
-        html: folderHtml,
-        headings: folderHtml ? extractHeadings(folderHtml) : undefined,
+        hast: rendered?.hast,
+        headings: rendered?.headings,
         children,
         breadcrumbs,
       };
@@ -212,7 +212,7 @@ export function createKb(config: ResolvedKbConfig) {
       const parsed = readMarkdownFile(mdPath);
       if (!parsed) return null;
 
-      const html = await renderMarkdown(parsed.content, slug, languages, base);
+      const { hast, headings } = await renderMarkdown(parsed.content, slug, languages, base);
       return {
         slug,
         name:
@@ -221,8 +221,8 @@ export function createKb(config: ResolvedKbConfig) {
         kind: "document",
         meta: parsed.meta,
         content: parsed.content,
-        html,
-        headings: extractHeadings(html),
+        hast,
+        headings,
         breadcrumbs,
       };
     }

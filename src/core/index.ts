@@ -1,7 +1,8 @@
 export { createKb } from "./scanner";
 export type { Kb } from "./scanner";
 export { defineConfig, resolveConfig, loadConfigFile } from "./config";
-export { renderMarkdown, extractHeadings } from "./parser";
+export { renderMarkdown } from "./parser";
+export type { RenderResult } from "./parser";
 export type {
   KbConfig,
   ResolvedKbConfig,
