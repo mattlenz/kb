@@ -404,5 +404,3 @@ export function kb(userConfig?: KbConfig): Plugin[] {
 
   return [kbContent, kbBuild];
 }
-
-export default kb;
