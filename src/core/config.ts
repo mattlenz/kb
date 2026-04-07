@@ -4,8 +4,8 @@ import type { KbConfig, ResolvedKbConfig } from "./types";
 
 const DEFAULT_LANGUAGES = [
   "typescript", "javascript", "tsx", "jsx", "json", "bash", "shell",
-  "yaml", "markdown", "css", "html", "python", "go", "rust", "sql",
-  "graphql", "diff", "toml",
+  "yaml", "markdown", "css", "html", "python", "go", "rust", "swift",
+  "sql", "graphql", "diff", "toml",
 ];
 
 function inferContentDir(rootDir: string): string {
