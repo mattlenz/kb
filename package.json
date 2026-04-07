@@ -15,7 +15,7 @@
     "typecheck": "tsc",
     "prepublishOnly": "npm run build",
     "postinstall": "npm run build",
-    "build": "tsc -p tsconfig.build.json && cp -r src/vite/styles dist/vite/ && cp -r src/vite/fonts dist/vite/",
+    "build": "tsc -p tsconfig.build.json",
     "dev": "npm run build && kb dev",
     "build:docs": "npm run build && kb build"
   },
