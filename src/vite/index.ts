@@ -159,13 +159,9 @@ export function kb(userConfig?: KbConfig): Plugin[] {
           },
           cssCodeSplit: false,
         },
-        // Allow Vite to serve files from the plugin's source and package directories
         server: {
           fs: {
-            allow: [
-              path.resolve(SRC_DIR, ".."),
-              path.resolve(__dirname, ".."),
-            ],
+            strict: false,
           },
         },
         // Disable default index.html handling
