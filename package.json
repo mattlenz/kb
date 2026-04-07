@@ -5,17 +5,19 @@
   "license": "MIT",
   "type": "module",
   "bin": {
-    "kb": "./src/cli/index.ts"
+    "kb": "./dist/cli/index.js"
   },
   "exports": {
-    ".": "./src/core/index.ts",
-    "./vite": "./src/vite/index.ts",
-    "./cli": "./src/cli/index.ts"
+    ".": "./dist/core/index.js",
+    "./vite": "./dist/vite/index.js"
   },
   "scripts": {
     "typecheck": "tsc",
-    "dev": "kb dev",
-    "build": "kb build"
+    "prepublishOnly": "npm run build",
+    "postinstall": "npm run build",
+    "build": "tsc -p tsconfig.build.json && cp -r src/vite/styles dist/vite/ && cp -r src/vite/fonts dist/vite/",
+    "dev": "npm run build && kb dev",
+    "build:docs": "npm run build && kb build"
   },
   "dependencies": {
     "@preact/signals": "^2.0.0",
@@ -28,6 +30,7 @@
     "rehype-slug": "^6.0.0",
     "remark": "^15.0.1",
     "remark-gfm": "^4.0.1",
+    "remark-heading-id": "^1.0.1",
     "remark-rehype": "^11.1.2",
     "shiki": "^4.0.2",
     "tsx": "^4.21.0",

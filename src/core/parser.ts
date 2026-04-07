@@ -1,6 +1,7 @@
 import { unified } from "unified";
 import remarkParse from "remark-parse";
 import remarkGfm from "remark-gfm";
+import remarkHeadingId from "remark-heading-id";
 import remarkRehype from "remark-rehype";
 import rehypeSlug from "rehype-slug";
 import rehypeShiki, { type RehypeShikiOptions } from "@shikijs/rehype";
@@ -169,6 +170,7 @@ export async function renderMarkdown(
   const processor = unified()
     .use(remarkParse)
     .use(remarkGfm)
+    .use(remarkHeadingId)
     .use(remarkRehype, { allowDangerousHtml: true })
     .use(rehypeSlug)
     .use(rehypeMermaid)
