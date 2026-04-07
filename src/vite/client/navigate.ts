@@ -1,6 +1,7 @@
 import {
   currentSlug,
   pageData,
+  rootName,
   base,
   expandAncestors,
 } from "./store";
@@ -17,6 +18,7 @@ export async function navigate(slug: string, pushState = true) {
   currentSlug.value = slug;
   pageData.value = data;
   expandAncestors(slug);
+  document.title = slug ? `${data.name} — ${rootName.value}` : rootName.value;
 
   if (pushState) {
     const href = slug ? `${base.value}/${slug}` : `${base.value}/`;

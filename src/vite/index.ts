@@ -28,6 +28,7 @@ function getHtmlShell(assetRefs: { css: string; js: string }, base = ""): string
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />${base ? `\n    <meta name="kb-base" content="${base}" />` : ""}
+    <title><!--kb-title--></title>
     <link rel="stylesheet" href="${assetRefs.css}" />
   </head>
   <body>
@@ -99,7 +100,11 @@ function renderFullPage(
   basePath = "",
 ): string {
   const { html, initialData } = renderPage(treeData, node, basePath);
+  const title = node.slug
+    ? `${node.name} — ${treeData.rootName}`
+    : treeData.rootName;
   return htmlShell
+    .replace("<!--kb-title-->", title)
     .replace("<!--kb-content-->", html)
     .replace("<!--kb-data-->", JSON.stringify(initialData));
 }
