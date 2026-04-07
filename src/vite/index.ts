@@ -141,11 +141,15 @@ export function kb(userConfig?: KbConfig): Plugin[] {
 
       return {
         ...(base ? { base: base + "/" } : {}),
-        // Alias React to Preact so JSX resolves correctly in any host project
+        // Tell esbuild to use Preact's JSX runtime directly (avoids
+        // react alias resolution issues with star-export modules)
+        esbuild: {
+          jsx: "automatic",
+          jsxImportSource: "preact",
+        },
+        // Alias React to Preact for any dependencies that import react
         resolve: {
           alias: {
-            "react/jsx-runtime": "preact/jsx-runtime",
-            "react/jsx-dev-runtime": "preact/jsx-runtime",
             react: "preact/compat",
             "react-dom": "preact/compat",
           },
