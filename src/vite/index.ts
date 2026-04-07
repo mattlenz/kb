@@ -141,6 +141,15 @@ export function kb(userConfig?: KbConfig): Plugin[] {
 
       return {
         ...(base ? { base: base + "/" } : {}),
+        // Alias React to Preact so JSX resolves correctly in any host project
+        resolve: {
+          alias: {
+            "react/jsx-runtime": "preact/jsx-runtime",
+            "react/jsx-dev-runtime": "preact/jsx-runtime",
+            react: "preact/compat",
+            "react-dom": "preact/compat",
+          },
+        },
         // Keep Vite's cache out of the user's project directory
         cacheDir: path.join(os.tmpdir(), "kb-vite-" + crypto.createHash("md5").update(process.cwd()).digest("hex").slice(0, 8)),
         // Build the virtual entry in library mode — produces bundled CSS + JS
