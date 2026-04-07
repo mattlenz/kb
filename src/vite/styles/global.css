@@ -276,7 +276,7 @@ body {
 
 .prose {
   font-size: 1.125rem;
-  line-height: 1.75rem;
+  line-height: 1.55;
   color: #3f4140;
   display: flex;
   flex-direction: column;
@@ -292,7 +292,7 @@ body {
 
 .prose h2 {
   font-size: 1.5rem;
-  line-height: 2rem;
+  line-height: 1.33;
   font-weight: 600;
 
   margin-top: 3rem;
@@ -301,7 +301,7 @@ body {
 
 .prose h3 {
   font-size: 1.25rem;
-  line-height: 1.75rem;
+  line-height: 1.4;
   font-weight: 600;
 
   margin-top: 3rem;
@@ -310,7 +310,7 @@ body {
 
 .prose h4 {
   font-size: 1.125rem;
-  line-height: 1.5rem;
+  line-height: 1.33;
   font-weight: 600;
 
   margin-top: 2rem;
