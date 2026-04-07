@@ -342,9 +342,10 @@ body {
 .prose .table-wrapper { overflow-x: auto; }
 
 .prose .mermaid-diagram {
-  padding: 1rem;
   display: flex;
   justify-content: center;
+  margin-top: 2.5rem;
+  margin-bottom: 2.5rem;
 }
 
 .prose .mermaid-light { background-color: white; }
@@ -356,7 +357,7 @@ body {
 }
 
 .prose .mermaid-diagram svg { max-width: 100%; height: auto; }
-.prose .mermaid-diagram foreignObject { overflow: visible; }
+.prose .mermaid-diagram foreignObject { overflow: visible; font-size: 12px; }
 .prose .mermaid-diagram .node foreignObject,
 .prose .mermaid-diagram .state-default foreignObject,
 .prose .mermaid-diagram .edgeLabel foreignObject {
@@ -365,7 +366,7 @@ body {
   align-items: center;
   justify-content: center;
 }
-.prose .mermaid-diagram foreignObject div { line-height: 1.2; }
+.prose .mermaid-diagram foreignObject div { line-height: normal; }
 
 @media (prefers-color-scheme: dark) {
   .shiki, .shiki span { color: var(--shiki-dark) !important; }

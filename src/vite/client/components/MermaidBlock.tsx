@@ -33,12 +33,19 @@ const darkVars = {
 let nextId = 0;
 let queue = Promise.resolve();
 
+const MERMAID_FONT_SIZE = 12;
+
 function renderChart(chart: string) {
   const task = queue.then(async () => {
     await document.fonts.ready;
     const { default: mermaid } = await import("mermaid");
     const id = nextId++;
-    const cfg = { startOnLoad: false, theme: "base" as const, fontFamily: '"Monument Grotesk", ui-sans-serif, system-ui, sans-serif', fontSize: 14 };
+    const cfg = { startOnLoad: false, theme: "base" as const, fontFamily: '"Monument Grotesk", ui-sans-serif, system-ui, sans-serif', fontSize: MERMAID_FONT_SIZE };
+
+    // Set font size on mermaid's render containers so text measurements match config
+    const style = document.createElement("style");
+    style.textContent = `foreignObject { font-size: ${MERMAID_FONT_SIZE}px; }`;
+    document.head.appendChild(style);
 
     mermaid.initialize({ ...cfg, themeVariables: lightVars });
     const light = await mermaid.render(`mermaid-l-${id}`, chart);
@@ -46,6 +53,7 @@ function renderChart(chart: string) {
     mermaid.initialize({ ...cfg, themeVariables: darkVars });
     const dark = await mermaid.render(`mermaid-d-${id}`, chart);
 
+    style.remove();
     return { light: light.svg, dark: dark.svg };
   });
   queue = task.then(() => {}, () => {});
