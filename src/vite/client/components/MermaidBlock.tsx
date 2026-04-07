@@ -31,6 +31,26 @@ const darkVars = {
 };
 
 let nextId = 0;
+let queue = Promise.resolve();
+
+function renderChart(chart: string) {
+  const task = queue.then(async () => {
+    await document.fonts.ready;
+    const { default: mermaid } = await import("mermaid");
+    const id = nextId++;
+    const cfg = { startOnLoad: false, theme: "base" as const, fontFamily: '"Monument Grotesk", ui-sans-serif, system-ui, sans-serif', fontSize: 14 };
+
+    mermaid.initialize({ ...cfg, themeVariables: lightVars });
+    const light = await mermaid.render(`mermaid-l-${id}`, chart);
+
+    mermaid.initialize({ ...cfg, themeVariables: darkVars });
+    const dark = await mermaid.render(`mermaid-d-${id}`, chart);
+
+    return { light: light.svg, dark: dark.svg };
+  });
+  queue = task.then(() => {}, () => {});
+  return task;
+}
 
 export function MermaidBlock({ chart }: { chart: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -40,31 +60,11 @@ export function MermaidBlock({ chart }: { chart: string }) {
     if (!chart || !containerRef.current) return;
     let cancelled = false;
 
-    import("mermaid").then(async (mod) => {
-      if (cancelled) return;
-      const mermaid = mod.default;
-      const id = nextId++;
-
-      mermaid.initialize({
-        startOnLoad: false,
-        theme: "base",
-        fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif",
-        themeVariables: lightVars,
-      });
-      const lightResult = await mermaid.render(`mermaid-l-${id}`, chart);
-
-      mermaid.initialize({
-        startOnLoad: false,
-        theme: "base",
-        fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif",
-        themeVariables: darkVars,
-      });
-      const darkResult = await mermaid.render(`mermaid-d-${id}`, chart);
-
+    renderChart(chart).then((result) => {
       if (!cancelled && containerRef.current) {
         containerRef.current.innerHTML = `
-          <div class="mermaid-diagram mermaid-light my-4">${lightResult.svg}</div>
-          <div class="mermaid-diagram mermaid-dark my-4">${darkResult.svg}</div>
+          <div class="mermaid-diagram mermaid-light my-4">${result.light}</div>
+          <div class="mermaid-diagram mermaid-dark my-4">${result.dark}</div>
         `;
         setRendered(true);
       }

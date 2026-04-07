@@ -354,7 +354,17 @@ body {
   .prose .mermaid-dark { display: flex; }
 }
 
-.prose .mermaid-diagram svg { max-width: none; }
+.prose .mermaid-diagram svg { max-width: 100%; height: auto; }
+.prose .mermaid-diagram foreignObject { overflow: visible; }
+.prose .mermaid-diagram .node foreignObject,
+.prose .mermaid-diagram .state-default foreignObject,
+.prose .mermaid-diagram .edgeLabel foreignObject {
+  overflow: visible;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.prose .mermaid-diagram foreignObject div { line-height: 1.2; }
 
 @media (prefers-color-scheme: dark) {
   .shiki, .shiki span { color: var(--shiki-dark) !important; }
