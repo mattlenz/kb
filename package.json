@@ -38,6 +38,7 @@
   },
   "devDependencies": {
     "@types/node": "^25.5.0",
+    "@types/remark-heading-id": "^1.0.0",
     "playwright": "^1.59.1",
     "typescript": "^6.0.2"
   }
