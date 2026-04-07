@@ -10,15 +10,16 @@ export const base = signal("");
 /** Set of expanded folder slugs in the sidebar. */
 export const expandedFolders = signal<Set<string>>(new Set());
 
-/** Expand all ancestor folders for a given slug. */
+/** Expand only the ancestor folders for a given slug (and root). */
 export function expandAncestors(slug: string) {
-  if (!slug) return;
-  const parts = slug.split("/");
-  const next = new Set(expandedFolders.value);
+  const next = new Set<string>();
   // Always expand root
   next.add("");
-  for (let i = 1; i <= parts.length; i++) {
-    next.add(parts.slice(0, i).join("/"));
+  if (slug) {
+    const parts = slug.split("/");
+    for (let i = 1; i <= parts.length; i++) {
+      next.add(parts.slice(0, i).join("/"));
+    }
   }
   expandedFolders.value = next;
 }
