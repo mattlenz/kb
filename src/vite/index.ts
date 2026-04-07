@@ -385,6 +385,16 @@ export function kb(userConfig?: KbConfig): Plugin[] {
         pageCount++;
       }
 
+      // Generate JSON API files for client-side navigation
+      for (const slug of treeData.slugs) {
+        const node = await buildKb.getNode(slug);
+        if (!node) continue;
+        const apiSlug = slug || "_index";
+        const jsonPath = path.join(outDir, "__kb_api", apiSlug + ".json");
+        fs.mkdirSync(path.dirname(jsonPath), { recursive: true });
+        fs.writeFileSync(jsonPath, JSON.stringify(toPageData(node)));
+      }
+
       // Copy knowledge assets to output
       copyAssets(buildConfig.contentDir, "", outDir);
 
