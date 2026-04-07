@@ -383,7 +383,6 @@ body {
   padding: 2px 8px;
   border-radius: 6px;
   font-size: 0.9em;
-  font-weight: 500;
   background-color: rgba(238, 241, 239, 0.5);
   color: #111827;
 }
@@ -391,8 +390,8 @@ body {
 .prose :not(pre) > code::before,
 .prose :not(pre) > code::after { content: none; }
 
-.prose a { color: #111827; font-weight: 600; text-decoration: none; }
-.prose a:hover { text-decoration: underline; }
+.prose a { color: LinkText; text-decoration: none; }
+.prose a:hover { text-decoration: underline; text-underline-offset: 0.2em; }
 
 .prose table {
   font-size: 0.875rem;
@@ -478,7 +477,7 @@ body {
   .prose pre { background-color: #0a0a0b; }
   .prose pre:not(.shiki) { background-color: #0a0a0b; color: #d4d4d4; }
   .prose :not(pre) > code { background-color: rgba(255, 255, 255, 0.05); color: #dfe1e0; }
-  .prose a { color: #f3f6f4; }
+  .prose a { color: LinkText; }
   .prose th, .prose td { border-color: rgba(255, 255, 255, 0.1); }
   .prose th { background-color: rgba(255, 255, 255, 0.05); }
   .prose blockquote { background-color: #3f4140; color: #9fa1a0; }
