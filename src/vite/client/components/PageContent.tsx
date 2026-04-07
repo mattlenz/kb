@@ -1,7 +1,6 @@
 import { pageData } from "../store";
 import { Breadcrumbs } from "./Breadcrumbs";
 import { PageHeader } from "./PageHeader";
-import { ChildrenCards } from "./ChildrenCards";
 import { Outline } from "./Outline";
 import { HastContent } from "./HastContent";
 
@@ -20,9 +19,6 @@ export function PageContent() {
               <div class="prose">
                 <HastContent hast={page.hast} />
               </div>
-            )}
-            {page.children && page.children.length > 0 && (
-              <ChildrenCards children={page.children} />
             )}
           </div>
         </article>

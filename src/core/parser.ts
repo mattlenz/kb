@@ -51,13 +51,14 @@ function rehypeMermaid() {
   };
 }
 
-/** Strip `background-color:` from inline style properties (shiki adds these). */
+/** Strip `background-color` and `font-family` from inline styles (shiki adds these). */
 function rehypeStripShikiBg() {
   return (tree: Root) => {
     visit(tree, "element", (node: Element) => {
       if (typeof node.properties.style === "string") {
         const cleaned = node.properties.style
           .replace(/background-color:[^;"]+;?/g, "")
+          .replace(/font-family:[^;"]+;?/g, "")
           .trim();
         node.properties.style = cleaned || undefined;
       }

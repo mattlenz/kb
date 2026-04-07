@@ -112,7 +112,7 @@ function buildBreadcrumbs(
   contentDir: string,
   rootName: string,
 ): Breadcrumb[] {
-  if (!slug) return [];
+  if (!slug) return [{ label: rootName, slug: "" }];
 
   const parts = slug.split("/");
   const crumbs: Breadcrumb[] = [{ label: rootName, slug: "" }];
@@ -174,7 +174,7 @@ export function createKb(config: ResolvedKbConfig) {
         hast: rendered?.hast,
         headings: rendered?.headings,
         children: getTree(),
-        breadcrumbs: [],
+        breadcrumbs: [{ label: rootName, slug: "" }],
       };
     }
 
