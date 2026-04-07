@@ -141,10 +141,9 @@ export function kb(userConfig?: KbConfig): Plugin[] {
 
       return {
         ...(base ? { base: base + "/" } : {}),
-        // Tell esbuild to use Preact's JSX runtime directly (avoids
-        // react alias resolution issues with star-export modules)
-        esbuild: {
-          jsx: "automatic",
+        // Use Preact's JSX runtime directly (avoids react alias
+        // resolution issues with star-export modules)
+        oxc: {
           jsxImportSource: "preact",
         },
         // Alias React to Preact for any dependencies that import react
