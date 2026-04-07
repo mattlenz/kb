@@ -5,7 +5,9 @@
     "rootDir": "src",
     "outDir": "dist",
     "declaration": true,
-    "rewriteRelativeImportExtensions": true
+    "rewriteRelativeImportExtensions": true,
+    "types": [],
+    "skipLibCheck": true
   },
   "exclude": ["node_modules", "dist"]
 }
