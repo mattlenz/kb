@@ -325,8 +325,9 @@ body {
 .prose pre,
 .prose .mermaid-diagram,
 .prose .table-wrapper {
-  border: 1px solid rgba(10, 13, 12, 0.1);
+  border: none;
   border-radius: 0.75rem;
+  background-color: rgba(238, 241, 239, 0.5);
   overflow: hidden;
   margin-top: 1.5rem;
   margin-bottom: 1.5rem;
@@ -378,19 +379,17 @@ body {
 .prose pre {
   font-size: 1rem;
   line-height: 1.75;
-  padding: 0.875rem 1rem;
+  padding: 0.875rem 1.175rem;
   overflow-x: auto;
-  background-color: white;
 }
 
 .prose pre:not(.shiki) {
-  background-color: white;
   color: #1f2328;
 }
 
 .prose :not(pre) > code {
   font-family: "Monument Grotesk Mono", ui-monospace, monospace;
-  padding: 2px 8px;
+  padding: 0.125rem 0.3rem;
   border-radius: 6px;
   font-size: 0.9em;
   background-color: rgba(238, 241, 239, 0.5);
@@ -433,7 +432,7 @@ body {
 }
 
 .prose hr { border-color: rgba(10, 13, 12, 0.1); }
-.prose figure img { margin: 0 auto; border: 1px solid rgba(10, 13, 12, 0.1); border-radius: 0.75rem; }
+.prose figure img { margin: 0 auto; border: none; border-radius: 0.75rem; background-color: rgba(238, 241, 239, 0.5); }
 .prose figcaption { margin-top: 0.25em; text-align: center; font-size: 0.875rem; color: rgba(10, 13, 12, 0.5); }
 
 /* --- Responsive --- */
@@ -483,7 +482,7 @@ body {
   .prose { color: #9fa1a0; }
   .prose h1, .prose h2, .prose h3, .prose h4 { color: #dfe1e0; }
   .prose h2 { color: #ffffff; }
-  .prose pre, .prose .mermaid-diagram, .prose .table-wrapper, .prose figure img { border-color: rgba(255, 255, 255, 0.1); }
+  .prose pre, .prose .mermaid-diagram, .prose .table-wrapper, .prose figure img { background-color: rgba(255, 255, 255, 0.05); }
   .prose pre { background-color: #0a0a0b; }
   .prose pre:not(.shiki) { background-color: #0a0a0b; color: #d4d4d4; }
   .prose :not(pre) > code { background-color: rgba(255, 255, 255, 0.05); color: #dfe1e0; }
