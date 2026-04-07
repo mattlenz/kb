@@ -1,3 +1,4 @@
+import { h } from "preact";
 import renderToString from "preact-render-to-string";
 import { Layout } from "./client/components/Layout";
 import {
@@ -66,7 +67,7 @@ export function renderPage(
   base.value = basePath;
   expandAncestors(node.slug);
 
-  const html = renderToString(<Layout />);
+  const html = renderToString(h(Layout, null));
 
   return {
     html,

@@ -14,8 +14,12 @@ import { renderPage, toTreeNodes, toPageData } from "./render";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// Plugin-owned asset paths
-const ENTRY_PATH = path.resolve(__dirname, "client/entry.tsx");
+// Plugin-owned asset paths — always point to source for Vite's client bundler.
+// At runtime __dirname may be dist/vite/ (compiled) or src/vite/ (source).
+const SRC_DIR = __dirname.includes("/dist/")
+  ? path.resolve(__dirname, "../../src/vite")
+  : __dirname;
+const ENTRY_PATH = path.resolve(SRC_DIR, "client/entry.tsx");
 
 /**
  * Generate the HTML shell with references to bundled assets.
@@ -146,10 +150,13 @@ export function kb(userConfig?: KbConfig): Plugin[] {
           },
           cssCodeSplit: false,
         },
-        // Allow Vite to serve files from the plugin's package directory
+        // Allow Vite to serve files from the plugin's source and package directories
         server: {
           fs: {
-            allow: [path.resolve(__dirname, "..")],
+            allow: [
+              path.resolve(SRC_DIR, ".."),
+              path.resolve(__dirname, ".."),
+            ],
           },
         },
         // Disable default index.html handling
@@ -260,7 +267,7 @@ export function kb(userConfig?: KbConfig): Plugin[] {
       // Serve pages via middleware
       server.middlewares.use(async (req, res, next) => {
         const url = req.url ?? "/";
-        const rawPathname = new URL(url, "http://localhost").pathname;
+        const rawPathname = decodeURIComponent(new URL(url, "http://localhost").pathname);
 
         // Skip Vite internals
         if (

@@ -11,7 +11,7 @@ export async function navigate(slug: string, pushState = true) {
   if (slug === currentSlug.value) return;
 
   const apiSlug = slug || "_index";
-  const url = `${base.value}/__kb_api/${apiSlug}.json`;
+  const url = `${base.value}/__kb_api/${encodeURI(apiSlug)}.json`;
   const res = await fetch(url);
   const data: PageData = await res.json();
 
@@ -21,7 +21,7 @@ export async function navigate(slug: string, pushState = true) {
   document.title = slug ? `${data.name} — ${rootName.value}` : rootName.value;
 
   if (pushState) {
-    const href = slug ? `${base.value}/${slug}` : `${base.value}/`;
+    const href = slug ? `${base.value}/${encodeURI(slug)}` : `${base.value}/`;
     history.pushState(null, "", href);
   }
 
@@ -32,7 +32,8 @@ function slugFromLocation(): string {
   const pathname = base.value
     ? window.location.pathname.replace(new RegExp(`^${base.value}`), "")
     : window.location.pathname;
-  return pathname === "/" ? "" : pathname.replace(/\/$/, "").slice(1);
+  const decoded = decodeURIComponent(pathname);
+  return decoded === "/" ? "" : decoded.replace(/\/$/, "").slice(1);
 }
 
 if (typeof window !== "undefined") {
