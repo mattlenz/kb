@@ -4,10 +4,10 @@
     "noEmit": false,
     "rootDir": "src",
     "outDir": "dist",
-    "declaration": true,
+    "declaration": false,
     "rewriteRelativeImportExtensions": true,
-    "types": [],
-    "skipLibCheck": true
+    "isolatedDeclarations": false,
+    "noCheck": true
   },
   "exclude": ["node_modules", "dist"]
 }
