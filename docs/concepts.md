@@ -61,17 +61,15 @@ description: Set up your first knowledge base in under a minute.
 Page content here...
 ```
 
-### `title`
+| Field | Type | Where | Description |
+|-------|------|-------|-------------|
+| `title` | `string` | Any page | Page title for sidebar, breadcrumbs, outline, and `<title>` tag. Falls back to the filename. |
+| `description` | `string` | Any page | Subtitle shown below the title in the page header. |
+| `children` | `string[]` | `index.md` only | Ordered list of child filenames (without `.md`) to control sidebar order. |
 
-Sets the page title used in the sidebar, breadcrumbs, outline, and `<title>` tag. If omitted, the filename is used (e.g. `getting-started.md` → "getting-started").
+### Custom ordering with `children`
 
-### `description`
-
-A subtitle shown below the page title in the header. Optional.
-
-### `children`
-
-Controls the order of child pages in the sidebar. Only valid in `index.md` files. List child filenames (without `.md` or path prefix):
+List child filenames in the order you want them to appear:
 
 ```markdown
 ---
