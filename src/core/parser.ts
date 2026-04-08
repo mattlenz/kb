@@ -116,20 +116,39 @@ function rehypeFigure() {
   };
 }
 
-/** Rewrite `./` relative URLs in href/src attributes based on slug and base path. */
+/** Rewrite relative URLs in href/src attributes based on slug and base path.
+ *  - `./foo` and `./foo.md` both resolve to the page slug `/foo`
+ *  - `../bar` resolves relative to the current slug's directory
+ */
 function rehypeRelativeUrls(options: { slug: string; base: string }) {
   const { slug, base } = options;
   const dir = slug.includes("/")
     ? slug.substring(0, slug.lastIndexOf("/") + 1)
     : "";
   return (tree: Root) => {
-    if (!dir && !base) return;
     visit(tree, "element", (node: Element) => {
       for (const attr of ["href", "src"] as const) {
-        const val = node.properties[attr];
-        if (typeof val === "string" && val.startsWith("./")) {
-          node.properties[attr] = `${base}/${dir}${val.slice(2)}`;
+        let val = node.properties[attr];
+        if (typeof val !== "string") continue;
+
+        // Only process relative paths (not absolute, protocol, or anchor-only)
+        if (!val.startsWith("./") && !val.startsWith("../")) continue;
+
+        // Strip .md extension from links (./foo.md → ./foo)
+        if (attr === "href") {
+          val = val.replace(/\.md$/, "");
         }
+
+        // Resolve the relative path against the current slug's directory
+        const parts = (dir + val).split("/");
+        const resolved: string[] = [];
+        for (const part of parts) {
+          if (part === "." || part === "") continue;
+          if (part === "..") resolved.pop();
+          else resolved.push(part);
+        }
+
+        node.properties[attr] = `${base}/${resolved.join("/")}`;
       }
     });
   };
