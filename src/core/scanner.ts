@@ -163,7 +163,7 @@ export function createKb(config: ResolvedKbConfig) {
       const indexPath = path.join(contentDir, "index.md");
       const indexParsed = readMarkdownFile(indexPath);
       const rendered = indexParsed?.content
-        ? await renderMarkdown(indexParsed.content, "/", languages, base)
+        ? await renderMarkdown(indexParsed.content, "/", languages, base, true)
         : undefined;
       return {
         slug: "/",
@@ -190,7 +190,7 @@ export function createKb(config: ResolvedKbConfig) {
       const indexParsed = readMarkdownFile(indexPath);
       const children = buildTree(fullPath, slug);
       const rendered = indexParsed?.content
-        ? await renderMarkdown(indexParsed.content, slug, languages, base)
+        ? await renderMarkdown(indexParsed.content, slug, languages, base, true)
         : undefined;
       return {
         slug,

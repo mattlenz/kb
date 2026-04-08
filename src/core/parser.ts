@@ -172,13 +172,19 @@ function rehypeFigure() {
  *  - `./foo` and `./foo.md` both resolve to the page slug `/foo`
  *  - `../bar` resolves relative to the current slug's directory
  */
-function rehypeRelativeUrls(options: { slug: string; base: string }) {
-  const { slug, base } = options;
-  // For slug "/guides/setup", dir is "guides/" — the path segments between slashes
+function rehypeRelativeUrls(options: { slug: string; base: string; isFolder?: boolean }) {
+  const { slug, base, isFolder } = options;
+  // For a document slug "/guides/setup", dir is "guides/"
+  // For a folder slug "/guides/setup" (index.md), dir is "guides/setup/"
   const bare = slug.slice(1); // strip leading /
-  const dir = bare.includes("/")
-    ? bare.substring(0, bare.lastIndexOf("/") + 1)
-    : "";
+  let dir: string;
+  if (isFolder) {
+    dir = bare ? bare + "/" : "";
+  } else {
+    dir = bare.includes("/")
+      ? bare.substring(0, bare.lastIndexOf("/") + 1)
+      : "";
+  }
   return (tree: Root) => {
     visit(tree, "element", (node: Element) => {
       for (const attr of ["href", "src"] as const) {
@@ -194,9 +200,17 @@ function rehypeRelativeUrls(options: { slug: string; base: string }) {
         // Only process relative paths (not absolute, protocol, or anchor-only)
         if (!val.startsWith("./") && !val.startsWith("../")) continue;
 
-        // Strip .md extension from links (./foo.md → ./foo)
+        // Strip .md extension from links (./foo.md → ./foo, ./foo.md#bar → ./foo#bar)
         if (attr === "href") {
-          val = val.replace(/\.md$/, "");
+          val = val.replace(/\.md(#|$)/, "$1");
+        }
+
+        // Separate fragment before resolving the path
+        let fragment = "";
+        const hashIdx = val.indexOf("#");
+        if (hashIdx !== -1) {
+          fragment = val.slice(hashIdx);
+          val = val.slice(0, hashIdx);
         }
 
         // Resolve the relative path against the current slug's directory
@@ -208,7 +222,11 @@ function rehypeRelativeUrls(options: { slug: string; base: string }) {
           else resolved.push(part);
         }
 
-        node.properties[attr] = `${base}/${resolved.join("/")}`;
+        // Strip trailing /index — folder slugs don't include it
+        let resolvedPath = resolved.join("/");
+        resolvedPath = resolvedPath.replace(/\/index$/, "");
+
+        node.properties[attr] = `${base}/${resolvedPath}${fragment}`;
       }
     });
   };
@@ -245,6 +263,7 @@ export async function renderMarkdown(
   slug: string,
   languages: string[],
   base = "",
+  isFolder = false,
 ): Promise<RenderResult> {
   const processor = unified()
     .use(remarkParse)
@@ -261,7 +280,7 @@ export async function renderMarkdown(
     .use(rehypeStripShikiBg)
     .use(rehypeTableWrap)
     .use(rehypeFigure)
-    .use(rehypeRelativeUrls, { slug, base });
+    .use(rehypeRelativeUrls, { slug, base, isFolder });
 
   const mdast = processor.parse(content);
   const hast = (await processor.run(mdast)) as Root;
