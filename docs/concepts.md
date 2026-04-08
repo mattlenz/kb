@@ -1,6 +1,6 @@
 ---
-title: Concepts
-description: How to organize, link, configure, and deploy your wiki.
+title: Guide
+description: How to organize, link, and author content.
 ---
 
 ## Getting started
@@ -12,16 +12,7 @@ kb dev                      # looks for docs/, falls back to .
 kb dev --content-dir wiki   # or specify explicitly
 ```
 
-When you need more control, add a `kb.config.ts` to your repo root:
-
-```typescript
-import { defineConfig } from "@mattlenz/kb";
-
-export default defineConfig({
-  title: "My Wiki",
-  contentDir: "docs",
-});
-```
+When you need more control, add a [[configuration|kb.config.ts]].
 
 ## Organizing content
 
@@ -91,92 +82,3 @@ All internal links are validated — `kb build` and `kb validate` will report an
 | `title` | `string` | Any page | Page title. Falls back to the filename. |
 | `description` | `string` | Any page | Subtitle shown below the title. |
 | `children` | `string[]` | `index.md` only | Sidebar order for child pages. |
-
-## Deploying
-
-```bash
-kb build                    # outputs to dist/
-```
-
-Build validates all links automatically. For subpath deployments (e.g. GitHub Pages project sites):
-
-```bash
-kb build --base /repo-name
-```
-
-### CI
-
-Run validation in CI to catch broken links before deploy:
-
-```bash
-kb validate                 # exit code 1 on errors
-```
-
-Or rely on `kb build` which validates after generating — a non-zero exit code will fail your CI pipeline.
-
-## Configuration reference
-
-```typescript
-import { defineConfig } from "@mattlenz/kb";
-
-export default defineConfig({
-  // Site title — sidebar root and <title> tag.
-  // Default: "Wiki"
-  title: "My Wiki",
-
-  // Content directory, relative to repo root.
-  // Default: "docs" if it exists, otherwise "."
-  contentDir: "docs",
-
-  // Base path for subpath deployments.
-  // Default: ""
-  base: "/my-repo",
-
-  // Additional Shiki languages for syntax highlighting.
-  // Common languages are included by default.
-  languages: ["ruby", "elixir", "hcl"],
-});
-```
-
-### Default languages
-
-Syntax highlighting is included for: TypeScript, JavaScript, TSX, JSX, JSON, Bash, Shell, YAML, Markdown, CSS, HTML, Python, Go, Rust, Swift, SQL, GraphQL, Diff, and TOML.
-
-Add more via the `languages` config. Any [Shiki language](https://shiki.style/languages) is supported.
-
-## CLI reference
-
-```bash
-kb dev                  # Start dev server with live reload
-kb build                # Build static site (validates links after)
-kb validate             # Check all pages render and links resolve
-
-# Options
-kb dev --port 3000      # Custom port
-kb build --base /docs   # Subpath deployment
-kb dev --content-dir .  # Override content directory
-```
-
-## Programmatic API
-
-The core library is available as `@mattlenz/kb`:
-
-```typescript
-import { createKb, resolveConfig } from "@mattlenz/kb";
-
-const config = resolveConfig(process.cwd());
-const kb = createKb(config);
-
-const tree = kb.getTree();
-const node = await kb.getNode("/guides/deployment");
-```
-
-The Vite plugin is available as `@mattlenz/kb/vite`:
-
-```typescript
-import { kb } from "@mattlenz/kb/vite";
-
-export default {
-  plugins: [kb({ title: "My Wiki" })],
-};
-```

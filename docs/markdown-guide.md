@@ -1,6 +1,6 @@
 ---
-title: Markdown Guide
-description: A visual test of all supported markdown formatting features.
+title: Formatting
+description: All supported markdown formatting features.
 ---
 
 This page demonstrates all supported markdown rendering features. Use it as a reference and a visual regression test.
@@ -52,12 +52,6 @@ Custom display text with a pipe: [[concepts|Core Concepts]]
 > This is a blockquote. It can span multiple lines.
 >
 > It can contain **bold**, *italic*, and `code`.
-
-Nested blockquotes:
-
-> Outer quote
->
-> > Nested quote
 
 ## Lists
 

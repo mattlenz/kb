@@ -1,13 +1,15 @@
 ---
 title: kb
-description: A markdown wiki static site generator powered by Vite.
+description: Turn a folder of markdown files into a wiki with live reload and static export.
 children:
   - concepts
+  - configuration
+  - cli
+  - deploying
+  - api
   - markdown-guide
   - fonts
 ---
-
-Drop markdown files in a directory and get a fully rendered site with sidebar navigation, syntax highlighting, and mermaid diagrams.
 
 ## Quick start
 
@@ -18,7 +20,7 @@ npx github:mattlenz/kb dev
 # → http://localhost:5173
 ```
 
-No config needed. Add a `kb.config.ts` when you want to customize — see [[concepts]].
+No config needed. Add a `kb.config.ts` when you want to customize — see [[configuration]].
 
 ## Install
 

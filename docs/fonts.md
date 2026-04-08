@@ -1,5 +1,5 @@
 ---
-title: Fonts
+title: Font License
 description: Font licensing and usage information.
 ---
 
