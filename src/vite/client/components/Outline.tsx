@@ -4,7 +4,7 @@ import type { Heading } from "../types.ts";
 
 const activeId = signal("");
 
-export function Outline({ headings }: { headings?: Heading[] }) {
+export function Outline({ title, headings }: { title?: string; headings?: Heading[] }) {
   const observerRef = useRef<IntersectionObserver | null>(null);
 
   useEffect(() => {
@@ -41,6 +41,7 @@ export function Outline({ headings }: { headings?: Heading[] }) {
 
   return (
     <nav class="kb-outline" data-outline>
+      {title && <span class="kb-outline-title">{title}</span>}
       {headings.map((h) => (
         <a
           key={h.id}

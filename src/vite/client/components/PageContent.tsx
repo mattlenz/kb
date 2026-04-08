@@ -24,7 +24,7 @@ export function PageContent() {
         </article>
       </div>
       <aside class="kb-outline-container">
-        <Outline headings={page.headings} />
+        <Outline title={page.name} headings={page.headings} />
       </aside>
     </div>
   );
