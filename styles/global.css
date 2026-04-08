@@ -331,11 +331,17 @@ body {
 .prose li.task-list-item input[type="checkbox"] { width: 1em; height: 1em; flex-shrink: 0; accent-color: #171a18; }
 .prose img { max-width: 100%; height: auto; max-height: 70vh;}
 
-.prose pre,
-.prose .table-wrapper {
+.prose pre {
   border: none;
   border-radius: 0.75rem;
   background-color: rgba(238, 241, 239, 0.5);
+  overflow: hidden;
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.prose .table-wrapper {
+  border: none;
   overflow: hidden;
   margin-top: 1.5rem;
   margin-bottom: 1.5rem;
@@ -429,16 +435,15 @@ body {
 
 .prose th, .prose td {
   border-bottom: 1px solid rgba(10, 13, 12, 0.1);
-  border-right: 1px solid rgba(10, 13, 12, 0.1);
-  padding: 0.5rem 0.75rem;
+  padding: 0.5rem 1.5rem 0.5rem 0;
   vertical-align: top;
   text-align: left;
 }
 
+.prose td:last-child, .prose th:last-child { padding-right: 0; }
 .prose td code, .prose th code { white-space: nowrap; }
-.prose th:last-child, .prose td:last-child { border-right: none; }
 .prose tr:last-child td { border-bottom: none; }
-.prose th { background-color: #f3f6f4; font-weight: 600; }
+.prose th { font-weight: 600; }
 
 .prose blockquote {
   background-color: rgba(238, 241, 239, 0.5);
@@ -578,12 +583,11 @@ body {
   .prose { color: #9fa1a0; }
   .prose h1, .prose h2, .prose h3, .prose h4 { color: #dfe1e0; }
   .prose h2 { color: #ffffff; }
-  .prose pre, .prose .table-wrapper, .prose figure img { background-color: rgba(255, 255, 255, 0.05); }
+  .prose pre, .prose figure img { background-color: rgba(255, 255, 255, 0.05); }
   .prose pre:not(.shiki) { color: #d4d4d4; }
   .prose :not(pre) > code { background-color: rgba(255, 255, 255, 0.05); color: #dfe1e0; }
   .prose a { text-decoration-color: rgba(255, 255, 255, 0.2); }
   .prose th, .prose td { border-color: rgba(255, 255, 255, 0.1); }
-  .prose th { background-color: rgba(255, 255, 255, 0.05); }
   .prose blockquote { background-color: rgba(255, 255, 255, 0.05); color: #9fa1a0; }
   .prose hr { border-color: rgba(255, 255, 255, 0.1); }
   .prose figcaption { color: rgba(255, 255, 255, 0.4); }

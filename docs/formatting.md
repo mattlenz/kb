@@ -191,7 +191,9 @@ Here is a statement with a footnote[^1]. And another[^2].
 [^1]: This is the first footnote.
 [^2]: This is the second footnote with `inline code`.
 
-## Mermaid diagrams
+## Diagrams
+
+### Mermaid
 
 ```mermaid
 graph LR
@@ -214,7 +216,37 @@ sequenceDiagram
     Client->>Vite: Hydrate
 ```
 
-## PlantUML diagrams
+### PlantUML
+
+```plantuml
+@startuml
+skinparam backgroundColor transparent
+skinparam defaultFontName "Helvetica"
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam actorStyle awesome
+
+skinparam agent {
+  BackgroundColor #f3f6f4
+  BorderColor #505351
+  FontColor #171a18
+}
+
+skinparam collections {
+  BackgroundColor #f3f6f4
+  BorderColor #505351
+  FontColor #171a18
+}
+
+actor "Author" as author
+agent "Agent" as ai
+collections "Knowledge\nTree" as tree
+
+author -right-> tree : write & organize
+author <-down-> ai : ask & refine
+ai -right-> tree : read & suggest
+@enduml
+```
 
 ```plantuml
 @startsalt
