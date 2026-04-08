@@ -332,7 +332,6 @@ body {
 .prose img { max-width: 100%; height: auto; max-height: 70vh;}
 
 .prose pre,
-.prose .mermaid-diagram,
 .prose .table-wrapper {
   border: none;
   border-radius: 0.75rem;
@@ -357,8 +356,8 @@ body {
   margin-bottom: 2.5rem;
 }
 
-.prose .mermaid-light { background-color: white; }
-.prose .mermaid-dark { display: none; background-color: #0a0a0b; }
+.prose .mermaid-light {}
+.prose .mermaid-dark { display: none; }
 
 @media (prefers-color-scheme: dark) {
   .prose .mermaid-light { display: none; }
@@ -409,8 +408,8 @@ body {
 .prose :not(pre) > code::before,
 .prose :not(pre) > code::after { content: none; }
 
-.prose a { color: LinkText; text-decoration: none; }
-.prose a:hover { text-decoration: underline; text-underline-offset: 0.2em; }
+.prose a { color: inherit; text-decoration: underline; text-decoration-color: #9fa1a0; text-underline-offset: 0.2em; text-decoration-skip-ink: none; }
+.prose a:hover { text-decoration-color: currentColor; }
 
 .prose table {
   font-size: 0.875rem;
@@ -433,7 +432,7 @@ body {
 .prose th { background-color: #f3f6f4; font-weight: 600; }
 
 .prose blockquote {
-  background-color: #f3f6f4;
+  background-color: rgba(238, 241, 239, 0.5);
   border-radius: 0.75rem;
   padding: 0 1.5rem;
   color: #505351;
@@ -492,14 +491,13 @@ body {
   .prose { color: #9fa1a0; }
   .prose h1, .prose h2, .prose h3, .prose h4 { color: #dfe1e0; }
   .prose h2 { color: #ffffff; }
-  .prose pre, .prose .mermaid-diagram, .prose .table-wrapper, .prose figure img { background-color: rgba(255, 255, 255, 0.05); }
-  .prose pre { background-color: #0a0a0b; }
-  .prose pre:not(.shiki) { background-color: #0a0a0b; color: #d4d4d4; }
+  .prose pre, .prose .table-wrapper, .prose figure img { background-color: rgba(255, 255, 255, 0.05); }
+  .prose pre:not(.shiki) { color: #d4d4d4; }
   .prose :not(pre) > code { background-color: rgba(255, 255, 255, 0.05); color: #dfe1e0; }
-  .prose a { color: LinkText; }
+  .prose a { text-decoration-color: rgba(255, 255, 255, 0.2); }
   .prose th, .prose td { border-color: rgba(255, 255, 255, 0.1); }
   .prose th { background-color: rgba(255, 255, 255, 0.05); }
-  .prose blockquote { background-color: #3f4140; color: #9fa1a0; }
+  .prose blockquote { background-color: rgba(255, 255, 255, 0.05); color: #9fa1a0; }
   .prose hr { border-color: rgba(255, 255, 255, 0.1); }
   .prose figcaption { color: rgba(255, 255, 255, 0.4); }
 }
