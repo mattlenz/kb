@@ -4,7 +4,7 @@ import type { TreeNode } from "../types.ts";
 
 export function SidebarTree() {
   const rootNode: TreeNode = {
-    slug: "",
+    slug: "/",
     name: rootName.value,
     kind: "folder",
     children: tree.value,
