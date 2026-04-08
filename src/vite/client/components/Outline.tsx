@@ -37,12 +37,10 @@ export function Outline({ title, headings }: { title?: string; headings?: Headin
     };
   }, [headings]);
 
-  if (!headings || headings.length === 0) return null;
-
   return (
     <nav class="kb-outline" data-outline>
       {title && <span class="kb-outline-title">{title}</span>}
-      {headings.map((h) => (
+      {headings?.map((h) => (
         <a
           key={h.id}
           href={`#${h.id}`}

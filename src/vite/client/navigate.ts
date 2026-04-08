@@ -5,6 +5,7 @@ import {
   base,
   expandAncestors,
   mobileMenuOpen,
+  notFound,
 } from "./store.ts";
 import type { PageData } from "./types.ts";
 
@@ -14,12 +15,20 @@ export async function navigate(slug: string, pushState = true) {
   const apiSlug = slug === "/" ? "_index" : slug.slice(1);
   const url = `${base.value}/__kb_api/${encodeURI(apiSlug)}.json`;
   const res = await fetch(url);
-  const data: PageData = await res.json();
 
   currentSlug.value = slug;
-  pageData.value = data;
-  expandAncestors(slug);
-  document.title = slug === "/" ? rootName.value : `${data.name} — ${rootName.value}`;
+
+  if (!res.ok) {
+    pageData.value = null;
+    notFound.value = true;
+    document.title = `Not found — ${rootName.value}`;
+  } else {
+    const data: PageData = await res.json();
+    pageData.value = data;
+    notFound.value = false;
+    expandAncestors(slug);
+    document.title = slug === "/" ? rootName.value : `${data.name} — ${rootName.value}`;
+  }
 
   if (pushState) {
     history.pushState(null, "", base.value + encodeURI(slug));

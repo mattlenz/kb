@@ -7,6 +7,7 @@ import {
   currentSlug,
   pageData,
   base,
+  notFound,
   expandAncestors,
 } from "./client/store.ts";
 import type { PageData, TreeNode } from "./client/types.ts";
@@ -42,8 +43,9 @@ interface RenderResult {
     tree: TreeNode[];
     rootName: string;
     currentSlug: string;
-    pageData: PageData;
+    pageData: PageData | null;
     base: string;
+    notFound?: boolean;
   };
 }
 
@@ -77,6 +79,40 @@ export function renderPage(
       currentSlug: node.slug,
       pageData: page,
       base: basePath,
+    },
+  };
+}
+
+/**
+ * Server-side render a 404 page using the same layout (sidebar visible).
+ */
+export function renderNotFoundPage(
+  treeData: { tree: KnowledgeNode[]; rootName: string },
+  basePath: string,
+): RenderResult {
+  const treeNodes = toTreeNodes(treeData.tree);
+
+  tree.value = treeNodes;
+  rootName.value = treeData.rootName;
+  currentSlug.value = "";
+  pageData.value = null;
+  notFound.value = true;
+  base.value = basePath;
+
+  const html = renderToString(h(Layout, null));
+
+  // Reset for subsequent renders
+  notFound.value = false;
+
+  return {
+    html,
+    initialData: {
+      tree: treeNodes,
+      rootName: treeData.rootName,
+      currentSlug: "",
+      pageData: null,
+      base: basePath,
+      notFound: true,
     },
   };
 }

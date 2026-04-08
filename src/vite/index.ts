@@ -10,7 +10,7 @@ import {
   type KbConfig,
   type KnowledgeNode,
 } from "../core/index.ts";
-import { renderPage, toTreeNodes, toPageData } from "./render.ts";
+import { renderPage, renderNotFoundPage, toTreeNodes, toPageData } from "./render.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -104,6 +104,19 @@ function renderFullPage(
   const title = node.slug === "/"
     ? treeData.rootName
     : `${node.name} — ${treeData.rootName}`;
+  return htmlShell
+    .replace("<!--kb-title-->", title)
+    .replace("<!--kb-content-->", html)
+    .replace("<!--kb-data-->", JSON.stringify(initialData));
+}
+
+function render404Page(
+  treeData: TreeData,
+  htmlShell: string,
+  basePath = "",
+): string {
+  const { html, initialData } = renderNotFoundPage(treeData, basePath);
+  const title = `Not found — ${treeData.rootName}`;
   return htmlShell
     .replace("<!--kb-title-->", title)
     .replace("<!--kb-content-->", html)
@@ -327,6 +340,18 @@ export function kb(userConfig?: KbConfig): Plugin[] {
 
         next();
       });
+
+      // Post-middleware: runs after all Vite internals, catches true 404s
+      return () => {
+        server.middlewares.use(async (req, res, _next) => {
+          const url = req.url ?? "/";
+          const transformed = await server.transformIndexHtml(url, devShell);
+          const html = render404Page(treeData, transformed, base);
+          res.statusCode = 404;
+          res.setHeader("content-type", "text/html");
+          res.end(html);
+        });
+      };
     },
   };
 
@@ -377,6 +402,10 @@ export function kb(userConfig?: KbConfig): Plugin[] {
         fs.mkdirSync(path.dirname(jsonPath), { recursive: true });
         fs.writeFileSync(jsonPath, JSON.stringify(toPageData(node)));
       }
+
+      // Generate 404 page for static hosting
+      const notFoundHtml = render404Page(treeData, htmlShell, base);
+      fs.writeFileSync(path.join(outDir, "404.html"), notFoundHtml);
 
       // Copy knowledge assets to output
       copyAssets(buildConfig.contentDir, "", outDir);

@@ -6,6 +6,7 @@ export const rootName = signal("");
 export const currentSlug = signal("/");
 export const pageData = signal<PageData | null>(null);
 export const base = signal("");
+export const notFound = signal(false);
 
 /** Set of expanded folder slugs in the sidebar. */
 export const expandedFolders = signal<Set<string>>(new Set());

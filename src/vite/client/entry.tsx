@@ -6,6 +6,7 @@ import {
   currentSlug,
   pageData,
   base,
+  notFound,
   expandAncestors,
 } from "./store.ts";
 import "./navigate.ts";
@@ -19,7 +20,8 @@ if (initEl) {
   currentSlug.value = init.currentSlug;
   pageData.value = init.pageData;
   base.value = init.base;
-  expandAncestors(init.currentSlug);
+  notFound.value = !!init.notFound;
+  if (!init.notFound) expandAncestors(init.currentSlug);
 }
 
 // Hydrate Preact onto the server-rendered layout
