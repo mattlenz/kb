@@ -1,10 +1,6 @@
 ---
 title: Concepts
 description: How kb maps files to pages, resolves titles, and orders the sidebar.
-children:
-  - concepts
-  - markdown-guide
-  - fonts
 ---
 
 ## Content directory
@@ -40,7 +36,7 @@ graph LR
 
 **Directories** become collapsible folders in the sidebar. A directory's `index.md` provides the folder's content page — without one, the folder still appears but has no page content.
 
-**Markdown files** (excluding `index.md`) become document pages. The filename becomes the URL slug.
+**Markdown files** (excluding `index.md`) become document pages. The filename becomes the URL path.
 
 **Non-markdown files** (images, PDFs, etc.) placed in the content directory are served directly in dev mode and copied to the build output. Reference them with relative paths:
 
@@ -142,8 +138,8 @@ Add more via the `languages` config. Any language [supported by Shiki](https://s
 
 ```bash
 kb dev                  # Start dev server with live reload
-kb build                # Build static site to dist/
-kb validate             # Check all pages render without errors
+kb build                # Build static site to dist/ (validates links after)
+kb validate             # Check all pages render and all links resolve
 
 # Options
 kb dev --port 3000      # Custom port
@@ -165,7 +161,7 @@ const kb = createKb(config);
 const tree = kb.getTree();
 
 // Get a single page with rendered content
-const node = await kb.getNode("guides/deployment");
+const node = await kb.getNode("/guides/deployment");
 console.log(node?.hast);  // HAST (HTML AST)
 console.log(node?.headings);  // Extracted headings
 console.log(node?.breadcrumbs);  // Navigation breadcrumbs
@@ -178,6 +174,6 @@ import { kb } from "@mattlenz/kb/vite";
 
 // Use in a custom Vite config
 export default {
-  plugins: [kb({ title: "My KB" })],
+  plugins: [kb({ title: "My Wiki" })],
 };
 ```

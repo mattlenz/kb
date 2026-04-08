@@ -27,9 +27,9 @@ npm install github:mattlenz/kb
 ## Usage
 
 ```bash
-npx kb dev       # Start dev server
-npx kb build     # Build static site to dist/
-npx kb validate  # Validate all pages
+npx kb dev       # Start dev server with live reload
+npx kb build     # Build static site (validates links after)
+npx kb validate  # Check all pages render and links resolve
 ```
 
 ## Configuration
@@ -77,4 +77,7 @@ For project sites served at `username.github.io/repo-name/`, pass `--base` in yo
 - Syntax highlighting via [Shiki](https://shiki.style) (light/dark themes)
 - [Mermaid](https://mermaid.js.org) diagram rendering
 - [GitHub Flavored Markdown](https://github.github.com/gfm/) (tables, strikethrough, autolinks)
+- Wiki links — `[[page]]` and `[[page|display text]]`
+- Relative links — `./page.md` resolves to the correct URL
+- Broken link detection on build and validate
 - Static build for deployment anywhere
