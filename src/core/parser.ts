@@ -7,8 +7,60 @@ import rehypeSlug from "rehype-slug";
 import rehypeShiki, { type RehypeShikiOptions } from "@shikijs/rehype";
 import { toString } from "hast-util-to-string";
 import type { Element, Root } from "hast";
-import { visit } from "unist-util-visit";
+import type { Root as MdastRoot, PhrasingContent } from "mdast";
+import { visit, SKIP } from "unist-util-visit";
 import type { Heading } from "./types.ts";
+
+// ---------------------------------------------------------------------------
+// Remark plugins
+// ---------------------------------------------------------------------------
+
+/**
+ * Convert `[[slug]]` and `[[slug|text]]` wiki-link syntax into standard
+ * markdown link nodes so they flow through the same URL resolution as
+ * every other internal link.
+ */
+function remarkWikiLinks() {
+  return (tree: MdastRoot) => {
+    visit(tree, "text", (node, index, parent) => {
+      if (!parent || index === undefined) return;
+
+      const wikiLinkRe = /\[\[([^\]]+)\]\]/g;
+      if (!wikiLinkRe.test(node.value)) return;
+      wikiLinkRe.lastIndex = 0;
+
+      const newNodes: PhrasingContent[] = [];
+      let last = 0;
+      let match: RegExpExecArray | null;
+
+      while ((match = wikiLinkRe.exec(node.value)) !== null) {
+        if (match.index > last) {
+          newNodes.push({ type: "text", value: node.value.slice(last, match.index) });
+        }
+
+        const raw = match[1];
+        const pipe = raw.indexOf("|");
+        const slug = (pipe >= 0 ? raw.slice(0, pipe) : raw).trim();
+        const text = (pipe >= 0 ? raw.slice(pipe + 1) : slug).trim();
+
+        newNodes.push({
+          type: "link",
+          url: `/${slug}`,
+          children: [{ type: "text", value: text }],
+        });
+
+        last = match.index + match[0].length;
+      }
+
+      if (last < node.value.length) {
+        newNodes.push({ type: "text", value: node.value.slice(last) });
+      }
+
+      (parent.children as PhrasingContent[]).splice(index, 1, ...newNodes);
+      return [SKIP, index + newNodes.length];
+    });
+  };
+}
 
 // ---------------------------------------------------------------------------
 // Rehype plugins
@@ -122,14 +174,22 @@ function rehypeFigure() {
  */
 function rehypeRelativeUrls(options: { slug: string; base: string }) {
   const { slug, base } = options;
-  const dir = slug.includes("/")
-    ? slug.substring(0, slug.lastIndexOf("/") + 1)
+  // For slug "/guides/setup", dir is "guides/" — the path segments between slashes
+  const bare = slug.slice(1); // strip leading /
+  const dir = bare.includes("/")
+    ? bare.substring(0, bare.lastIndexOf("/") + 1)
     : "";
   return (tree: Root) => {
     visit(tree, "element", (node: Element) => {
       for (const attr of ["href", "src"] as const) {
         let val = node.properties[attr];
         if (typeof val !== "string") continue;
+
+        // Absolute internal links (e.g. /slug from wiki links) — just prepend base
+        if (val.startsWith("/")) {
+          if (base) node.properties[attr] = `${base}${val}`;
+          continue;
+        }
 
         // Only process relative paths (not absolute, protocol, or anchor-only)
         if (!val.startsWith("./") && !val.startsWith("../")) continue;
@@ -190,6 +250,7 @@ export async function renderMarkdown(
     .use(remarkParse)
     .use(remarkGfm)
     .use(remarkHeadingId)
+    .use(remarkWikiLinks)
     .use(remarkRehype, { allowDangerousHtml: true })
     .use(rehypeSlug)
     .use(rehypeMermaid)
@@ -207,4 +268,33 @@ export async function renderMarkdown(
   const headings = extractHeadingsFromHast(hast);
 
   return { hast, headings };
+}
+
+// ---------------------------------------------------------------------------
+// Link extraction (used by validate)
+// ---------------------------------------------------------------------------
+
+export interface InternalLink {
+  slug: string;
+  href: string;
+}
+
+export function extractInternalLinks(hast: Root, base: string): InternalLink[] {
+  const links: InternalLink[] = [];
+  visit(hast, "element", (node: Element) => {
+    if (node.tagName !== "a") return;
+    const href = node.properties.href;
+    if (typeof href !== "string") return;
+    if (/^(https?:\/\/|mailto:|#)/.test(href)) return;
+
+    let slug = href;
+    if (base && slug.startsWith(base)) slug = slug.slice(base.length);
+    slug = slug.replace(/#.*$/, "");
+    // Normalize: ensure leading / and no trailing /
+    if (!slug.startsWith("/")) slug = "/" + slug;
+    if (slug !== "/" && slug.endsWith("/")) slug = slug.replace(/\/+$/, "");
+
+    links.push({ slug, href });
+  });
+  return links;
 }

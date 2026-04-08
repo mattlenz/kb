@@ -33,7 +33,7 @@ export function TreeNodeItem({
     navigate(node.slug);
   };
 
-  const href = node.slug ? `${base.value}/${encodeURI(node.slug)}` : `${base.value}/`;
+  const href = base.value + encodeURI(node.slug);
 
   return (
     <div>

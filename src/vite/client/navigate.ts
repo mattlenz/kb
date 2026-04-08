@@ -10,7 +10,7 @@ import type { PageData } from "./types.ts";
 export async function navigate(slug: string, pushState = true) {
   if (slug === currentSlug.value) return;
 
-  const apiSlug = slug || "_index";
+  const apiSlug = slug === "/" ? "_index" : slug.slice(1);
   const url = `${base.value}/__kb_api/${encodeURI(apiSlug)}.json`;
   const res = await fetch(url);
   const data: PageData = await res.json();
@@ -18,11 +18,10 @@ export async function navigate(slug: string, pushState = true) {
   currentSlug.value = slug;
   pageData.value = data;
   expandAncestors(slug);
-  document.title = slug ? `${data.name} — ${rootName.value}` : rootName.value;
+  document.title = slug === "/" ? rootName.value : `${data.name} — ${rootName.value}`;
 
   if (pushState) {
-    const href = slug ? `${base.value}/${encodeURI(slug)}` : `${base.value}/`;
-    history.pushState(null, "", href);
+    history.pushState(null, "", base.value + encodeURI(slug));
   }
 
   document.querySelector(".kb-main")?.scrollTo(0, 0);
@@ -33,7 +32,7 @@ function slugFromLocation(): string {
     ? window.location.pathname.replace(new RegExp(`^${base.value}`), "")
     : window.location.pathname;
   const decoded = decodeURIComponent(pathname);
-  return decoded === "/" ? "" : decoded.replace(/\/$/, "").slice(1);
+  return decoded.replace(/\/$/, "") || "/";
 }
 
 if (typeof window !== "undefined") {

@@ -47,7 +47,7 @@ function buildTree(dir: string, slugPrefix: string): KnowledgeNode[] {
       continue;
 
     const baseName = entry.name.replace(/\.md$/, "");
-    const slug = slugPrefix ? `${slugPrefix}/${baseName}` : baseName;
+    const slug = `${slugPrefix}/${baseName}`;
     const filePath = path.join(dir, entry.name);
     const parsed = readMarkdownFile(filePath);
 
@@ -66,7 +66,7 @@ function buildTree(dir: string, slugPrefix: string): KnowledgeNode[] {
   for (const entry of entries) {
     if (!entry.isDirectory() || entry.name.startsWith(".")) continue;
 
-    const slug = slugPrefix ? `${slugPrefix}/${entry.name}` : entry.name;
+    const slug = `${slugPrefix}/${entry.name}`;
     const subDir = path.join(dir, entry.name);
     const indexPath = path.join(subDir, "index.md");
     const indexParsed = readMarkdownFile(indexPath);
@@ -112,13 +112,13 @@ function buildBreadcrumbs(
   contentDir: string,
   rootName: string,
 ): Breadcrumb[] {
-  if (!slug) return [{ label: rootName, slug: "" }];
+  if (slug === "/") return [{ label: rootName, slug: "/" }];
 
-  const parts = slug.split("/");
-  const crumbs: Breadcrumb[] = [{ label: rootName, slug: "" }];
+  const parts = slug.slice(1).split("/");
+  const crumbs: Breadcrumb[] = [{ label: rootName, slug: "/" }];
 
   for (let i = 0; i < parts.length; i++) {
-    const ancestorSlug = parts.slice(0, i + 1).join("/");
+    const ancestorSlug = "/" + parts.slice(0, i + 1).join("/");
     const ancestorPath = path.join(contentDir, ...parts.slice(0, i + 1));
 
     let label = nameFromFilename(parts[i]);
@@ -159,14 +159,14 @@ export function createKb(config: ResolvedKbConfig) {
   async function getNode(slug: string): Promise<KnowledgeNode | null> {
     const rootName = getRootMeta().name;
 
-    if (!slug) {
+    if (slug === "/") {
       const indexPath = path.join(contentDir, "index.md");
       const indexParsed = readMarkdownFile(indexPath);
       const rendered = indexParsed?.content
-        ? await renderMarkdown(indexParsed.content, "", languages, base)
+        ? await renderMarkdown(indexParsed.content, "/", languages, base)
         : undefined;
       return {
-        slug: "",
+        slug: "/",
         name: indexParsed?.meta.title || title,
         kind: "folder",
         meta: indexParsed?.meta,
@@ -174,11 +174,11 @@ export function createKb(config: ResolvedKbConfig) {
         hast: rendered?.hast,
         headings: rendered?.headings,
         children: getTree(),
-        breadcrumbs: [{ label: rootName, slug: "" }],
+        breadcrumbs: [{ label: rootName, slug: "/" }],
       };
     }
 
-    const parts = slug.split("/");
+    const parts = slug.slice(1).split("/");
     const fullPath = path.join(contentDir, ...parts);
     const breadcrumbs = buildBreadcrumbs(slug, contentDir, rootName);
 
@@ -240,7 +240,7 @@ export function createKb(config: ResolvedKbConfig) {
       }
       return slugs;
     }
-    return ["", ...collect(getTree())];
+    return ["/", ...collect(getTree())];
   }
 
   return { getTree, getRootMeta, getNode, getAllSlugs, config };

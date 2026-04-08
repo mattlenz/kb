@@ -20,7 +20,7 @@ export function Breadcrumbs({ breadcrumbs }: { breadcrumbs?: Breadcrumb[] }) {
     }
     items.push(
       <a
-        href={crumb.slug ? `${base.value}/${encodeURI(crumb.slug)}` : `${base.value}/`}
+        href={base.value + encodeURI(crumb.slug)}
         onClick={handleClick(crumb.slug)}
       >
         {crumb.label}

@@ -83,11 +83,11 @@ function fileToSlug(filePath: string, contentDir: string): string | null {
   if (!filePath.startsWith(contentDir)) return null;
   let rel = filePath.slice(contentDir.length).replace(/^\/+/, "");
   // index.md → parent folder slug
-  if (rel === "index.md") return "";
+  if (rel === "index.md") return "/";
   if (rel.endsWith("/index.md")) rel = rel.slice(0, -"/index.md".length);
   else if (rel.endsWith(".md")) rel = rel.slice(0, -".md".length);
   else return null; // non-markdown file
-  return rel;
+  return "/" + rel;
 }
 
 /** File-extension pattern for knowledge assets */
@@ -101,9 +101,9 @@ function renderFullPage(
   basePath = "",
 ): string {
   const { html, initialData } = renderPage(treeData, node, basePath);
-  const title = node.slug
-    ? `${node.name} — ${treeData.rootName}`
-    : treeData.rootName;
+  const title = node.slug === "/"
+    ? treeData.rootName
+    : `${node.name} — ${treeData.rootName}`;
   return htmlShell
     .replace("<!--kb-title-->", title)
     .replace("<!--kb-content-->", html)
@@ -208,7 +208,7 @@ export function kb(userConfig?: KbConfig): Plugin[] {
             const slug = fileToSlug(event.file, config.contentDir);
             if (slug !== null) {
               pageCache.delete(slug);
-              console.log(`[kb] Invalidated: ${slug || "(root)"}`);
+              console.log(`[kb] Invalidated: ${slug}`);
               // Re-render and push to client
               kb.getNode(slug).then((node) => {
                 if (node) {
@@ -287,7 +287,7 @@ export function kb(userConfig?: KbConfig): Plugin[] {
         // JSON API for client-side navigation
         if (pathname.startsWith("/__kb_api/")) {
           const apiSlug = pathname.slice("/__kb_api/".length).replace(/\.json$/, "");
-          const resolvedSlug = apiSlug === "_index" ? "" : apiSlug;
+          const resolvedSlug = apiSlug === "_index" ? "/" : "/" + apiSlug;
 
           if (treeData.slugs.has(resolvedSlug)) {
             let node = pageCache.get(resolvedSlug);
@@ -306,9 +306,8 @@ export function kb(userConfig?: KbConfig): Plugin[] {
           return;
         }
 
-        // Page routes
-        const slug =
-          pathname === "/" ? "" : pathname.replace(/\/$/, "").slice(1);
+        // Page routes — slug IS the pathname
+        const slug = pathname.replace(/\/$/, "") || "/";
 
         if (treeData.slugs.has(slug)) {
           // On-demand rendering with cache
@@ -361,9 +360,9 @@ export function kb(userConfig?: KbConfig): Plugin[] {
         if (!node) continue;
         const html = renderFullPage(treeData, node, htmlShell, base);
         const filePath =
-          slug === ""
+          slug === "/"
             ? path.join(outDir, "index.html")
-            : path.join(outDir, slug, "index.html");
+            : path.join(outDir, slug.slice(1), "index.html");
         fs.mkdirSync(path.dirname(filePath), { recursive: true });
         fs.writeFileSync(filePath, html);
         pageCount++;
@@ -373,7 +372,7 @@ export function kb(userConfig?: KbConfig): Plugin[] {
       for (const slug of treeData.slugs) {
         const node = await buildKb.getNode(slug);
         if (!node) continue;
-        const apiSlug = slug || "_index";
+        const apiSlug = slug === "/" ? "_index" : slug.slice(1);
         const jsonPath = path.join(outDir, "__kb_api", apiSlug + ".json");
         fs.mkdirSync(path.dirname(jsonPath), { recursive: true });
         fs.writeFileSync(jsonPath, JSON.stringify(toPageData(node)));
