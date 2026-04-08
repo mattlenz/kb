@@ -1,7 +1,7 @@
 {
   "name": "@mattlenz/kb",
   "version": "0.0.1",
-  "description": "Markdown knowledge base static site generator with Vite",
+  "description": "Markdown wiki static site generator with Vite",
   "license": "MIT",
   "type": "module",
   "bin": {

@@ -55,7 +55,7 @@ Every markdown file can include YAML frontmatter:
 ```markdown
 ---
 title: Getting Started
-description: Set up your first knowledge base in under a minute.
+description: Set up your first wiki in under a minute.
 ---
 
 Page content here...
@@ -112,7 +112,7 @@ import { defineConfig } from "@mattlenz/kb";
 
 export default defineConfig({
   // Site title — shown in the sidebar root and <title> tag.
-  // Default: "Knowledge Base"
+  // Default: "Wiki"
   title: "My Docs",
 
   // Content directory, relative to the repo root.

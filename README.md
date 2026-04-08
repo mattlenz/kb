@@ -1,6 +1,6 @@
 # kb
 
-A markdown knowledge base static site generator powered by Vite.
+A markdown wiki static site generator powered by Vite.
 
 Drop markdown files in a directory and get a fully rendered site with sidebar navigation, syntax highlighting, and mermaid diagrams.
 
@@ -40,7 +40,7 @@ Create a `kb.config.ts` in your repo root:
 import { defineConfig } from "@mattlenz/kb";
 
 export default defineConfig({
-  title: "My Knowledge Base",
+  title: "My Wiki",
   contentDir: "docs", // defaults to "docs" if it exists, otherwise "."
   base: "/kb", // base path for subpath deployments
 });

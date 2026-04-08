@@ -141,7 +141,7 @@ function buildBreadcrumbs(
 }
 
 /**
- * Create a knowledge base instance bound to a resolved config.
+ * Create a wiki instance bound to a resolved config.
  * All content operations use the configured contentDir and rootDir.
  */
 export function createKb(config: ResolvedKbConfig) {

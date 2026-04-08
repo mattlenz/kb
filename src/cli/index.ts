@@ -3,12 +3,12 @@
 /**
  * kb CLI
  *
- * Run a knowledge base from the current working directory.
+ * Run a wiki from the current working directory.
  *
  * Usage:
  *   kb dev       Start development server
  *   kb build     Build for production
- *   kb validate  Validate knowledge base content
+ *   kb validate  Validate wiki content
  */
 
 import fs from "node:fs";
@@ -46,12 +46,12 @@ function findRepoRoot(from: string): string {
 
 function printHelp() {
   console.log(`
-  kb - Knowledge base CLI
+  kb - Markdown wiki CLI
 
   Commands:
     kb dev        Start development server
     kb build      Build for production
-    kb validate   Validate knowledge base content
+    kb validate   Validate wiki content
 
   Options:
     --base <path>         Base path for deployment (e.g. /repo-name)
@@ -110,7 +110,7 @@ async function main() {
     }
 
     case "validate": {
-      console.log(`[kb] Validating knowledge base at ${rootDir}`);
+      console.log(`[kb] Validating wiki at ${rootDir}`);
       const config = resolveConfig(rootDir, userConfig);
       const kb = createKb(config);
 

@@ -26,7 +26,7 @@ export function resolveConfig(
   const base = rawBase === "/" ? "" : rawBase.replace(/\/+$/, "");
 
   return {
-    title: userConfig?.title ?? "Knowledge Base",
+    title: userConfig?.title ?? "Wiki",
     contentDir: path.resolve(rootDir, userConfig?.contentDir ?? inferContentDir(rootDir)),
     rootDir,
     base,

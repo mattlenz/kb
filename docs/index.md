@@ -1,6 +1,6 @@
 ---
 title: kb
-description: A markdown knowledge base static site generator powered by Vite.
+description: A markdown wiki static site generator powered by Vite.
 children:
   - concepts
   - markdown-guide
@@ -41,7 +41,7 @@ Create a `kb.config.ts` in your repo root:
 import { defineConfig } from "@mattlenz/kb";
 
 export default defineConfig({
-  title: "My Knowledge Base",
+  title: "My Wiki",
   contentDir: "docs", // defaults to "docs" if it exists, otherwise "."
   base: "/kb", // base path for subpath deployments
 });

@@ -29,7 +29,7 @@ export interface KnowledgeNode {
 }
 
 export interface KbConfig {
-  /** Site/knowledge base title. */
+  /** Site/wiki title. */
   title?: string;
   /** Path to content directory, relative to root. Default: "docs" if it exists, otherwise "." */
   contentDir?: string;

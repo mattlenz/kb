@@ -111,7 +111,7 @@ function renderFullPage(
 }
 
 /**
- * Vite plugin for the kb knowledge base system.
+ * Vite plugin for the kb wiki system.
  *
  * Vite is used purely as an asset bundler (CSS + client JS).
  * HTML is generated entirely by the plugin — never a Vite entry.
@@ -169,7 +169,7 @@ export function kb(userConfig?: KbConfig): Plugin[] {
     },
 
     async buildStart() {
-      console.log("[kb] Building knowledge base...");
+      console.log("[kb] Building wiki...");
       treeData = buildTreeData(rootDir, userConfig);
       console.log(`[kb] Found ${treeData.slugs.size} pages`);
     },
