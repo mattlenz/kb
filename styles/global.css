@@ -435,6 +435,7 @@ body {
   background-color: rgba(238, 241, 239, 0.5);
   border-radius: 0.75rem;
   padding: 0 1.5rem;
+  margin: 1em 0;
   color: #505351;
   font-style: normal;
 }
