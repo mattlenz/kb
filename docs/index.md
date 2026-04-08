@@ -16,6 +16,7 @@ mkdir kb-example
 cd kb-example
 echo "# Hello" > index.md
 npx github:mattlenz/kb dev
+# → http://localhost:5173
 ```
 
 ## Install
