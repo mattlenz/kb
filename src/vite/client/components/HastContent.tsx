@@ -2,6 +2,7 @@ import { toJsxRuntime } from "hast-util-to-jsx-runtime";
 import { Fragment, jsx, jsxs } from "preact/jsx-runtime";
 import type { Root } from "hast";
 import { MermaidBlock } from "./MermaidBlock.tsx";
+import { PlantUMLBlock } from "./PlantUMLBlock.tsx";
 
 function ExternalLink(props: Record<string, unknown>) {
   const href = props.href as string | undefined;
@@ -19,6 +20,7 @@ export function HastContent({ hast }: { hast: Root }) {
     elementAttributeNameCase: "html",
     components: {
       "kb-mermaid": MermaidBlock as never,
+      "kb-plantuml": PlantUMLBlock as never,
       a: ExternalLink as never,
     },
   });

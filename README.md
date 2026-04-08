@@ -36,4 +36,4 @@ npm install github:mattlenz/kb
 
 ## Documentation
 
-Run `kb dev` in this repo to browse the full docs, or see [docs/concepts.md](docs/concepts.md) for how content is organized, linked, and deployed.
+Run `kb dev` in this repo to browse the full docs, or see [docs/guide.md](docs/guide.md) for how content is organized, linked, and deployed.

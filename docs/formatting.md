@@ -33,19 +33,19 @@ Autolinked URL: https://github.com
 
 [Relative link to the root page](/)
 
-[Relative link to concepts (URL)](./concepts)
+[Relative link to guide (URL)](./guide)
 
-[Relative link to concepts (.md)](./concepts.md)
+[Relative link to guide (.md)](./guide.md)
 
-[Relative link to fonts (.md)](./fonts.md)
+[Relative link to font-license (.md)](./font-license.md)
 
 ### Wiki links
 
 Link to any page by slug using double brackets:
 
-[[concepts]] and [[fonts]]
+[[guide]] and [[font-license]]
 
-Custom display text with a pipe: [[concepts|Core Concepts]]
+Custom display text with a pipe: [[guide|Guide]]
 
 ## Blockquotes
 
@@ -212,6 +212,24 @@ sequenceDiagram
     Plugin->>Plugin: Render markdown
     Plugin-->>Client: SSR HTML
     Client->>Vite: Hydrate
+```
+
+## PlantUML diagrams
+
+```plantuml
+@startsalt
+{
+{T
+ + <&folder> src
+ ++ <&folder> components
+ +++ <&file> Header.tsx
+ +++ <&file> Footer.tsx
+ ++ <&folder> utils
+ +++ <&file> format.ts
+ ++ <&file> index.ts
+}
+}
+@endsalt
 ```
 
 ## Escaping

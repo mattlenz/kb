@@ -18,15 +18,20 @@ When you need more control, add a [[configuration|kb.config.ts]].
 
 Your file structure _is_ your sidebar — directories become collapsible folders, markdown files become pages:
 
-```mermaid
-graph LR
-  docs["docs/"]
-  docs --- index.md
-  docs --- getting-started.md
-  docs --- guides["guides/"]
-  guides --- gi["index.md"]
-  guides --- deployment.md
-  guides --- authentication.md
+```plantuml
+@startsalt
+{
+{T
+ + <&folder> docs
+ ++ <&file> index.md
+ ++ <&file> getting-started.md
+ ++ <&folder> guides
+ +++ <&file> index.md
+ +++ <&file> deployment.md
+ +++ <&file> authentication.md
+}
+}
+@endsalt
 ```
 
 Each file maps to a URL: `getting-started.md` → `/getting-started`, `guides/deployment.md` → `/guides/deployment`.

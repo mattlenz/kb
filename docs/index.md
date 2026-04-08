@@ -2,13 +2,14 @@
 title: kb
 description: Turn a folder of markdown files into a wiki with live reload and static export.
 children:
-  - concepts
+  - guide
   - configuration
-  - cli
+  - command-line
   - deploying
-  - api
-  - markdown-guide
-  - fonts
+  - typescript
+  - formatting
+  - font-license
+  - drafts
 ---
 
 ## Quick start
@@ -43,7 +44,7 @@ Then add scripts to your `package.json`:
 
 - Sidebar navigation from your file structure
 - Syntax highlighting with light/dark themes
-- Mermaid diagram rendering
+- Mermaid and PlantUML diagram rendering
 - GitHub Flavored Markdown (tables, task lists, strikethrough)
 - Wiki links — `[[page]]` and `[[page|display text]]`
 - Relative links — `./page.md` resolves correctly

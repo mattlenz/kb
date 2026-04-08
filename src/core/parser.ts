@@ -70,7 +70,7 @@ function remarkWikiLinks() {
  * Replace mermaid code blocks with `<kb-mermaid chart="...">` custom elements
  * before Shiki tries to highlight them.
  */
-function rehypeMermaid() {
+function rehypeDiagrams() {
   return (tree: Root) => {
     visit(tree, "element", (node: Element, index, parent) => {
       if (
@@ -87,16 +87,17 @@ function rehypeMermaid() {
       ) return;
 
       const className = (code.properties?.className as string[]) ?? [];
-      if (!className.includes("language-mermaid")) return;
+      if (!className.includes("language-mermaid") && !className.includes("language-plantuml")) return;
 
       const raw = code.children
         .filter((c): c is { type: "text"; value: string } => c.type === "text")
         .map((c) => c.value)
         .join("");
 
+      const isMermaid = className.includes("language-mermaid");
       (parent.children as Element[])[index] = {
         type: "element",
-        tagName: "kb-mermaid",
+        tagName: isMermaid ? "kb-mermaid" : "kb-plantuml",
         properties: { chart: raw },
         children: [],
       };
@@ -272,7 +273,7 @@ export async function renderMarkdown(
     .use(remarkWikiLinks)
     .use(remarkRehype, { allowDangerousHtml: true })
     .use(rehypeSlug)
-    .use(rehypeMermaid)
+    .use(rehypeDiagrams)
     .use(rehypeShiki, {
       themes: { light: "github-light", dark: "github-dark" },
       langs: languages,
