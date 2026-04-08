@@ -1,6 +1,10 @@
 ---
 title: kb
 description: A markdown knowledge base static site generator powered by Vite.
+children:
+  - concepts
+  - markdown-guide
+  - fonts
 ---
 
 Drop markdown files in a directory and get a fully rendered site with sidebar navigation, syntax highlighting, and mermaid diagrams.
