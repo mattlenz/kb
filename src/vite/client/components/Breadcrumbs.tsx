@@ -1,8 +1,8 @@
 import * as preact from "preact";
-import { base } from "../store";
-import { navigate } from "../navigate";
-import { ChevronIcon } from "./icons";
-import type { Breadcrumb } from "../types";
+import { base } from "../store.ts";
+import { navigate } from "../navigate.ts";
+import { ChevronIcon } from "./icons.tsx";
+import type { Breadcrumb } from "../types.ts";
 
 export function Breadcrumbs({ breadcrumbs }: { breadcrumbs?: Breadcrumb[] }) {
   const ancestors = breadcrumbs;

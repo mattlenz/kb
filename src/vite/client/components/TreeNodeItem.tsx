@@ -1,8 +1,8 @@
 import type { Signal } from "@preact/signals";
-import { currentSlug, base } from "../store";
-import { navigate } from "../navigate";
-import { ChevronIcon, DocIcon } from "./icons";
-import type { TreeNode } from "../types";
+import { currentSlug, base } from "../store.ts";
+import { navigate } from "../navigate.ts";
+import { ChevronIcon, DocIcon } from "./icons.tsx";
+import type { TreeNode } from "../types.ts";
 
 export function TreeNodeItem({
   node,

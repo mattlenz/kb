@@ -1,7 +1,7 @@
 import { toJsxRuntime } from "hast-util-to-jsx-runtime";
 import { Fragment, jsx, jsxs } from "preact/jsx-runtime";
 import type { Root } from "hast";
-import { MermaidBlock } from "./MermaidBlock";
+import { MermaidBlock } from "./MermaidBlock.tsx";
 
 export function HastContent({ hast }: { hast: Root }) {
   return toJsxRuntime(hast, {

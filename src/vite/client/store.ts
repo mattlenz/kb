@@ -1,5 +1,5 @@
 import { signal } from "@preact/signals";
-import type { PageData, TreeNode } from "./types";
+import type { PageData, TreeNode } from "./types.ts";
 
 export const tree = signal<TreeNode[]>([]);
 export const rootName = signal("");

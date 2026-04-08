@@ -1,6 +1,5 @@
-import "../styles/global.css";
 import { hydrate } from "preact";
-import { Layout } from "./components/Layout";
+import { Layout } from "./components/Layout.tsx";
 import {
   tree,
   rootName,
@@ -8,8 +7,8 @@ import {
   pageData,
   base,
   expandAncestors,
-} from "./store";
-import "./navigate";
+} from "./store.ts";
+import "./navigate.ts";
 
 // Read initial state embedded by the server
 const initEl = document.getElementById("kb-data");

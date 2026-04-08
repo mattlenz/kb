@@ -4,8 +4,8 @@ import {
   rootName,
   base,
   expandAncestors,
-} from "./store";
-import type { PageData } from "./types";
+} from "./store.ts";
+import type { PageData } from "./types.ts";
 
 export async function navigate(slug: string, pushState = true) {
   if (slug === currentSlug.value) return;

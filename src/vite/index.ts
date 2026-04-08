@@ -9,17 +9,14 @@ import {
   resolveConfig,
   type KbConfig,
   type KnowledgeNode,
-} from "../core/index";
-import { renderPage, toTreeNodes, toPageData } from "./render";
+} from "../core/index.ts";
+import { renderPage, toTreeNodes, toPageData } from "./render.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// Plugin-owned asset paths — always point to source for Vite's client bundler.
-// At runtime __dirname may be dist/vite/ (compiled) or src/vite/ (source).
-const SRC_DIR = __dirname.includes("/dist/")
-  ? path.resolve(__dirname, "../../src/vite")
-  : __dirname;
-const ENTRY_PATH = path.resolve(SRC_DIR, "client/entry.tsx");
+const ENTRY_PATH = path.resolve(__dirname, "client/entry.js");
+// CSS lives at the package root — resolve from dist/vite/ or src/vite/
+const CSS_PATH = path.resolve(__dirname, "../../styles/global.css");
 
 /**
  * Generate the HTML shell with references to bundled assets.
@@ -126,9 +123,6 @@ export function kb(userConfig?: KbConfig): Plugin[] {
   /** On-demand page cache — populated by middleware, invalidated by watcher. */
   const pageCache = new Map<string, KnowledgeNode>();
 
-  // Single JS entry that imports the Preact client app (CSS + components).
-  const entrySource = `import "${ENTRY_PATH}";`;
-
   const VIRTUAL_ENTRY = "virtual:kb-entry";
   const RESOLVED_ENTRY = "\0" + VIRTUAL_ENTRY;
 
@@ -141,18 +135,6 @@ export function kb(userConfig?: KbConfig): Plugin[] {
 
       return {
         ...(base ? { base: base + "/" } : {}),
-        // Use Preact's JSX runtime directly (avoids react alias
-        // resolution issues with star-export modules)
-        oxc: {
-          jsxImportSource: "preact",
-        },
-        // Alias React to Preact for any dependencies that import react
-        resolve: {
-          alias: {
-            react: "preact/compat",
-            "react-dom": "preact/compat",
-          },
-        },
         // Keep Vite's cache out of the user's project directory
         cacheDir: path.join(os.tmpdir(), "kb-vite-" + crypto.createHash("md5").update(process.cwd()).digest("hex").slice(0, 8)),
         // Build the virtual entry in library mode — produces bundled CSS + JS
@@ -181,7 +163,9 @@ export function kb(userConfig?: KbConfig): Plugin[] {
     },
 
     load(id) {
-      if (id === RESOLVED_ENTRY) return entrySource;
+      if (id === RESOLVED_ENTRY) {
+        return `import "${CSS_PATH}";\nimport "${ENTRY_PATH}";`;
+      }
     },
 
     async buildStart() {
@@ -268,9 +252,10 @@ export function kb(userConfig?: KbConfig): Plugin[] {
         return rel.startsWith("..") ? "/@fs" + absPath : "/" + rel;
       };
       const devEntryUrl = toDevUrl(ENTRY_PATH);
+      const devCssUrl = toDevUrl(CSS_PATH);
 
       // Dev HTML shell — single entry point for Preact app
-      const devShell = getHtmlShell({ css: "", js: devEntryUrl }, base);
+      const devShell = getHtmlShell({ css: devCssUrl, js: devEntryUrl }, base);
 
       // Serve pages via middleware
       server.middlewares.use(async (req, res, next) => {

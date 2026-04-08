@@ -4,10 +4,8 @@
     "noEmit": false,
     "rootDir": "src",
     "outDir": "dist",
-    "declaration": false,
+    "declaration": true,
     "rewriteRelativeImportExtensions": true,
-    "isolatedDeclarations": false,
-    "noCheck": true,
     "types": []
   },
   "exclude": ["node_modules", "dist"]

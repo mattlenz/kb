@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import type { KbConfig, ResolvedKbConfig } from "./types";
+import type { KbConfig, ResolvedKbConfig } from "./types.ts";
 
 const DEFAULT_LANGUAGES = [
   "typescript", "javascript", "tsx", "jsx", "json", "bash", "shell",

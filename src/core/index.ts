@@ -1,8 +1,8 @@
-export { createKb } from "./scanner";
-export type { Kb } from "./scanner";
-export { defineConfig, resolveConfig, loadConfigFile } from "./config";
-export { renderMarkdown } from "./parser";
-export type { RenderResult } from "./parser";
+export { createKb } from "./scanner.ts";
+export type { Kb } from "./scanner.ts";
+export { defineConfig, resolveConfig, loadConfigFile } from "./config.ts";
+export { renderMarkdown } from "./parser.ts";
+export type { RenderResult } from "./parser.ts";
 export type {
   KbConfig,
   ResolvedKbConfig,
@@ -10,4 +10,4 @@ export type {
   Breadcrumb,
   Heading,
   KnowledgeNode,
-} from "./types";
+} from "./types.ts";

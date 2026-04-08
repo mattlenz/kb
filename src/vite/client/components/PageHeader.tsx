@@ -1,4 +1,4 @@
-import type { PageData } from "../types";
+import type { PageData } from "../types.ts";
 
 export function PageHeader({ page }: { page: PageData }) {
 

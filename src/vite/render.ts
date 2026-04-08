@@ -1,6 +1,6 @@
 import { h } from "preact";
 import renderToString from "preact-render-to-string";
-import { Layout } from "./client/components/Layout";
+import { Layout } from "./client/components/Layout.tsx";
 import {
   tree,
   rootName,
@@ -8,9 +8,9 @@ import {
   pageData,
   base,
   expandAncestors,
-} from "./client/store";
-import type { PageData, TreeNode } from "./client/types";
-import type { KnowledgeNode } from "../core/types";
+} from "./client/store.ts";
+import type { PageData, TreeNode } from "./client/types.ts";
+import type { KnowledgeNode } from "../core/types.ts";
 
 /** Convert a KnowledgeNode tree to client-safe TreeNodes (no content/html). */
 export function toTreeNodes(nodes: KnowledgeNode[]): TreeNode[] {

@@ -1,8 +1,8 @@
-import { pageData } from "../store";
-import { Breadcrumbs } from "./Breadcrumbs";
-import { PageHeader } from "./PageHeader";
-import { Outline } from "./Outline";
-import { HastContent } from "./HastContent";
+import { pageData } from "../store.ts";
+import { Breadcrumbs } from "./Breadcrumbs.tsx";
+import { PageHeader } from "./PageHeader.tsx";
+import { Outline } from "./Outline.tsx";
+import { HastContent } from "./HastContent.tsx";
 
 export function PageContent() {
   const page = pageData.value;

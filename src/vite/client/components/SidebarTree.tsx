@@ -1,6 +1,6 @@
-import { tree, rootName, expandedFolders } from "../store";
-import { TreeNodeItem } from "./TreeNodeItem";
-import type { TreeNode } from "../types";
+import { tree, rootName, expandedFolders } from "../store.ts";
+import { TreeNodeItem } from "./TreeNodeItem.tsx";
+import type { TreeNode } from "../types.ts";
 
 export function SidebarTree() {
   const rootNode: TreeNode = {

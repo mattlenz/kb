@@ -1,4 +1,4 @@
-#!/usr/bin/env tsx
+#!/usr/bin/env node
 
 /**
  * kb CLI
@@ -14,8 +14,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import { parseArgs } from "node:util";
-import { createKb, resolveConfig, loadConfigFile } from "../core/index";
-import { kb as kbPlugin } from "../vite/index";
+import { createKb, resolveConfig, loadConfigFile } from "../core/index.ts";
+import { kb as kbPlugin } from "../vite/index.ts";
 
 const { values, positionals } = parseArgs({
   args: process.argv.slice(2),

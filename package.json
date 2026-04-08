@@ -8,14 +8,19 @@
     "kb": "./dist/cli/index.js"
   },
   "exports": {
-    ".": "./dist/core/index.js",
-    "./vite": "./dist/vite/index.js"
+    ".": {
+      "types": "./dist/core/index.d.ts",
+      "default": "./dist/core/index.js"
+    },
+    "./vite": {
+      "types": "./dist/vite/index.d.ts",
+      "default": "./dist/vite/index.js"
+    }
   },
   "scripts": {
     "typecheck": "tsc",
-    "prepublishOnly": "npm run build",
-    "postinstall": "npm run build",
-    "build": "tsc -p tsconfig.build.json",
+    "prepare": "npm run build",
+    "build": "rm -rf dist && tsc -p tsconfig.build.json && chmod +x dist/cli/index.js",
     "dev": "npm run build && kb dev",
     "build:docs": "npm run build && kb build"
   },

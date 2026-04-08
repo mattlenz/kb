@@ -8,7 +8,7 @@ import rehypeShiki, { type RehypeShikiOptions } from "@shikijs/rehype";
 import { toString } from "hast-util-to-string";
 import type { Element, Root } from "hast";
 import { visit } from "unist-util-visit";
-import type { Heading } from "./types";
+import type { Heading } from "./types.ts";
 
 // ---------------------------------------------------------------------------
 // Rehype plugins

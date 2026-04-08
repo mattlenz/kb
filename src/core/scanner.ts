@@ -1,13 +1,13 @@
 import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
-import { renderMarkdown } from "./parser";
+import { renderMarkdown } from "./parser.ts";
 import type {
   DocumentMeta,
   Breadcrumb,
   KnowledgeNode,
   ResolvedKbConfig,
-} from "./types";
+} from "./types.ts";
 
 function nameFromFilename(filename: string): string {
   return filename.replace(/\.md$/, "");

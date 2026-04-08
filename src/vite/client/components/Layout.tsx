@@ -1,5 +1,5 @@
-import { SidebarTree } from "./SidebarTree";
-import { PageContent } from "./PageContent";
+import { SidebarTree } from "./SidebarTree.tsx";
+import { PageContent } from "./PageContent.tsx";
 
 export function Layout() {
   return (

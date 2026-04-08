@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "preact/hooks";
 import { signal } from "@preact/signals";
-import type { Heading } from "../types";
+import type { Heading } from "../types.ts";
 
 const activeId = signal("");
 
