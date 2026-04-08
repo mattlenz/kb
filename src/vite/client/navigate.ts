@@ -4,6 +4,7 @@ import {
   rootName,
   base,
   expandAncestors,
+  mobileMenuOpen,
 } from "./store.ts";
 import type { PageData } from "./types.ts";
 
@@ -24,6 +25,7 @@ export async function navigate(slug: string, pushState = true) {
     history.pushState(null, "", base.value + encodeURI(slug));
   }
 
+  mobileMenuOpen.value = false;
   document.querySelector(".kb-main")?.scrollTo(0, 0);
 }
 

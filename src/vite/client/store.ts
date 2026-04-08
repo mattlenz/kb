@@ -10,6 +10,9 @@ export const base = signal("");
 /** Set of expanded folder slugs in the sidebar. */
 export const expandedFolders = signal<Set<string>>(new Set());
 
+/** Whether the mobile navigation overlay is open. */
+export const mobileMenuOpen = signal(false);
+
 /** Expand only the ancestor folders for a given slug (and root). */
 export function expandAncestors(slug: string) {
   const next = new Set<string>();
