@@ -348,7 +348,7 @@ body {
   flex-direction: column;
 }
 
-.prose .table-wrapper { overflow-x: auto; }
+.prose .table-wrapper { overflow-x: auto; margin-right: auto; }
 
 .prose .mermaid-diagram {
   display: flex;
@@ -416,7 +416,6 @@ body {
   font-size: 0.875rem;
   border-collapse: separate;
   border-spacing: 0;
-  min-width: 100%;
   margin: 0;
 }
 
