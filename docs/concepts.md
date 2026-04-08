@@ -92,16 +92,18 @@ When no `children` frontmatter is specified, pages are sorted by:
 
 This means recently edited pages naturally float to the top.
 
-## Slugs
+## URLs
 
-Slugs are derived from the file path relative to the content directory:
+Each file maps directly to a URL:
 
-| File path | Slug | URL |
-|-----------|------|-----|
-| `index.md` | `""` (empty) | `/` |
-| `overview.md` | `overview` | `/overview` |
-| `guides/index.md` | `guides` | `/guides` |
-| `guides/setup.md` | `guides/setup` | `/guides/setup` |
+| File | URL |
+|------|-----|
+| `index.md` | `/` |
+| `overview.md` | `/overview` |
+| `guides/index.md` | `/guides` |
+| `guides/setup.md` | `/guides/setup` |
+
+The filename minus `.md` becomes the URL path. `index.md` files resolve to their parent directory.
 
 ## Configuration
 
