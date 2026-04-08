@@ -14,8 +14,52 @@
 import fs from "node:fs";
 import path from "node:path";
 import { parseArgs } from "node:util";
-import { createKb, resolveConfig, loadConfigFile } from "../core/index.ts";
+import { createKb, resolveConfig, loadConfigFile, type ResolvedKbConfig } from "../core/index.ts";
+import { extractInternalLinks } from "../core/parser.ts";
 import { kb as kbPlugin } from "../vite/index.ts";
+
+async function validateWiki(config: ResolvedKbConfig): Promise<{ totalErrors: number }> {
+  const kb = createKb(config);
+  const slugs = kb.getAllSlugs();
+  const validSlugs = new Set(slugs);
+  let renderErrors = 0;
+  let linkErrors = 0;
+
+  for (const slug of slugs) {
+    try {
+      const node = await kb.getNode(slug);
+      if (!node) {
+        console.error(`  [error] ${slug}: page not found`);
+        renderErrors++;
+        continue;
+      }
+      if (!node.hast) continue;
+
+      const links = extractInternalLinks(node.hast, config.base);
+      for (const link of links) {
+        if (!validSlugs.has(link.slug)) {
+          console.error(`  [broken link] ${slug} → ${link.href}`);
+          linkErrors++;
+        }
+      }
+    } catch (err) {
+      console.error(`  [error] ${slug}: ${err instanceof Error ? err.message : err}`);
+      renderErrors++;
+    }
+  }
+
+  const totalErrors = renderErrors + linkErrors;
+  if (totalErrors > 0) {
+    console.error(
+      `\n[kb] ${totalErrors} error(s)` +
+        (linkErrors ? ` (${linkErrors} broken link(s))` : ""),
+    );
+  } else {
+    console.log(`[kb] ${slugs.length} pages validated`);
+  }
+
+  return { totalErrors };
+}
 
 const { values, positionals } = parseArgs({
   args: process.argv.slice(2),
@@ -106,47 +150,22 @@ async function main() {
         plugins: [kbPlugin(userConfig)],
         configFile: false,
       });
+      // Validate links after build
+      const buildConfig = resolveConfig(rootDir, userConfig);
+      await validateWiki(buildConfig);
       break;
     }
 
     case "validate": {
-      console.log(`[kb] Validating wiki at ${rootDir}`);
       const config = resolveConfig(rootDir, userConfig);
-      const kb = createKb(config);
 
       if (!fs.existsSync(config.contentDir)) {
-        console.error(
-          `[kb] Content directory not found: ${config.contentDir}`,
-        );
+        console.error(`[kb] Content directory not found: ${config.contentDir}`);
         process.exit(1);
       }
 
-      const slugs = kb.getAllSlugs();
-      let errors = 0;
-
-      for (const slug of slugs) {
-        try {
-          const node = await kb.getNode(slug);
-          if (!node) {
-            console.error(`  [error] ${slug || "(root)"}: node not found`);
-            errors++;
-          } else {
-            console.log(`  [ok] ${slug || "(root)"}`);
-          }
-        } catch (err) {
-          console.error(
-            `  [error] ${slug || "(root)"}: ${err instanceof Error ? err.message : err}`,
-          );
-          errors++;
-        }
-      }
-
-      if (errors > 0) {
-        console.error(`\n[kb] Validation failed with ${errors} error(s)`);
-        process.exit(1);
-      }
-
-      console.log(`\n[kb] All ${slugs.length} pages validated successfully`);
+      const { totalErrors } = await validateWiki(config);
+      if (totalErrors > 0) process.exit(1);
       break;
     }
 

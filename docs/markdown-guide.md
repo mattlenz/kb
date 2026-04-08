@@ -39,6 +39,14 @@ Autolinked URL: https://github.com
 
 [Relative link to fonts (.md)](./fonts.md)
 
+### Wiki links
+
+Link to any page by slug using double brackets:
+
+[[concepts]] and [[fonts]]
+
+Custom display text with a pipe: [[concepts|Core Concepts]]
+
 ## Blockquotes
 
 > This is a blockquote. It can span multiple lines.

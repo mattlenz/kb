@@ -21,20 +21,21 @@ export default defineConfig({
 
 ## File structure
 
-The content directory maps directly to the sidebar tree:
+Your file structure _is_ your knowledge tree — directories become folders, markdown files become pages, and the sidebar mirrors what's on disk:
 
-```
-docs/
-  index.md              → /           (root page)
-  getting-started.md    → /getting-started
-  guides/
-    index.md            → /guides     (section page)
-    deployment.md       → /guides/deployment
-    authentication.md   → /guides/authentication
-  api/
-    index.md            → /api
-    rest.md             → /api/rest
-    graphql.md          → /api/graphql
+```mermaid
+graph LR
+  docs["docs/"]
+  docs --- index.md
+  docs --- getting-started.md
+  docs --- guides["guides/"]
+  guides --- gi["index.md"]
+  guides --- deployment.md
+  guides --- authentication.md
+  docs --- api["api/"]
+  api --- ai["index.md"]
+  api --- rest.md
+  api --- graphql.md
 ```
 
 **Directories** become collapsible folders in the sidebar. A directory's `index.md` provides the folder's content page — without one, the folder still appears but has no page content.
