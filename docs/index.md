@@ -12,12 +12,13 @@ Drop markdown files in a directory and get a fully rendered site with sidebar na
 ## Quick start
 
 ```bash
-mkdir kb-example
-cd kb-example
+mkdir my-wiki && cd my-wiki
 echo "# Hello" > index.md
 npx github:mattlenz/kb dev
 # → http://localhost:5173
 ```
+
+No config needed. Add a `kb.config.ts` when you want to customize — see [[concepts]].
 
 ## Install
 
@@ -25,60 +26,24 @@ npx github:mattlenz/kb dev
 npm install github:mattlenz/kb
 ```
 
-## Usage
+Then add scripts to your `package.json`:
 
-```bash
-npx kb dev       # Start dev server with live reload
-npx kb build     # Build static site (validates links after)
-npx kb validate  # Check all pages render and links resolve
+```json
+{
+  "scripts": {
+    "dev": "kb dev",
+    "build": "kb build"
+  }
+}
 ```
-
-## Configuration
-
-Create a `kb.config.ts` in your repo root:
-
-```ts
-import { defineConfig } from "@mattlenz/kb";
-
-export default defineConfig({
-  title: "My Wiki",
-  contentDir: "docs", // defaults to "docs" if it exists, otherwise "."
-  base: "/kb", // base path for subpath deployments
-});
-```
-
-## Content structure
-
-```
-docs/
-  index.md          # Root page
-  getting-started.md
-  guides/
-    index.md        # Section page
-    deployment.md
-```
-
-Frontmatter supports `title`, `description`, and `children` (for custom ordering).
-
-## Deployment
-
-Use `--base` when deploying to a subpath:
-
-```bash
-npx kb build --base /kb
-```
-
-### GitHub Pages
-
-For project sites served at `username.github.io/repo-name/`, pass `--base` in your build step and use the `actions/deploy-pages` workflow to publish the `dist/` output.
 
 ## Features
 
-- Sidebar navigation with collapsible folders
-- Syntax highlighting via [Shiki](https://shiki.style) (light/dark themes)
-- [Mermaid](https://mermaid.js.org) diagram rendering
-- [GitHub Flavored Markdown](https://github.github.com/gfm/) (tables, strikethrough, autolinks)
+- Sidebar navigation from your file structure
+- Syntax highlighting with light/dark themes
+- Mermaid diagram rendering
+- GitHub Flavored Markdown (tables, task lists, strikethrough)
 - Wiki links — `[[page]]` and `[[page|display text]]`
-- Relative links — `./page.md` resolves to the correct URL
-- Broken link detection on build and validate
-- Static build for deployment anywhere
+- Relative links — `./page.md` resolves correctly
+- Broken link detection on build
+- Static output for deployment anywhere

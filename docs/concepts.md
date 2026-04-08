@@ -1,23 +1,31 @@
 ---
 title: Concepts
-description: How kb maps files to pages, resolves titles, and orders the sidebar.
+description: How to organize, link, configure, and deploy your wiki.
 ---
 
-## Content directory
+## Getting started
 
-kb looks for a `docs/` directory by default. If none exists, it uses the current directory. Override this in `kb.config.ts`:
+kb works with zero config. Point it at a directory of markdown files:
+
+```bash
+kb dev                      # looks for docs/, falls back to .
+kb dev --content-dir wiki   # or specify explicitly
+```
+
+When you need more control, add a `kb.config.ts` to your repo root:
 
 ```typescript
 import { defineConfig } from "@mattlenz/kb";
 
 export default defineConfig({
-  contentDir: "knowledge",
+  title: "My Wiki",
+  contentDir: "docs",
 });
 ```
 
-## File structure
+## Organizing content
 
-Your file structure _is_ your knowledge tree — directories become folders, markdown files become pages, and the sidebar mirrors what's on disk:
+Your file structure _is_ your sidebar — directories become collapsible folders, markdown files become pages:
 
 ```mermaid
 graph LR
@@ -28,47 +36,21 @@ graph LR
   guides --- gi["index.md"]
   guides --- deployment.md
   guides --- authentication.md
-  docs --- api["api/"]
-  api --- ai["index.md"]
-  api --- rest.md
-  api --- graphql.md
 ```
 
-**Directories** become collapsible folders in the sidebar. A directory's `index.md` provides the folder's content page — without one, the folder still appears but has no page content.
+Each file maps to a URL: `getting-started.md` → `/getting-started`, `guides/deployment.md` → `/guides/deployment`.
 
-**Markdown files** (excluding `index.md`) become document pages. The filename becomes the URL path.
+### Section pages
 
-**Non-markdown files** (images, PDFs, etc.) placed in the content directory are served directly in dev mode and copied to the build output. Reference them with relative paths:
+A directory's `index.md` provides the content for that folder's page. Without one, the folder still appears in the sidebar but has no page body.
 
-```markdown
-![Architecture diagram](./architecture.png)
-[Download the spec](./spec.pdf)
-```
+### Ordering
 
-## Frontmatter
+By default, folders sort before documents, and pages sort by most-recently modified first.
 
-Every markdown file can include YAML frontmatter:
+To set an explicit order, add `children` to a section's `index.md`:
 
-```markdown
----
-title: Getting Started
-description: Set up your first wiki in under a minute.
----
-
-Page content here...
-```
-
-| Field | Type | Where | Description |
-|-------|------|-------|-------------|
-| `title` | `string` | Any page | Page title for sidebar, breadcrumbs, outline, and `<title>` tag. Falls back to the filename. |
-| `description` | `string` | Any page | Subtitle shown below the title in the page header. |
-| `children` | `string[]` | `index.md` only | Ordered list of child filenames (without `.md`) to control sidebar order. |
-
-### Custom ordering with `children`
-
-List child filenames in the order you want them to appear:
-
-```markdown
+```yaml
 ---
 title: Guides
 children:
@@ -78,68 +60,96 @@ children:
 ---
 ```
 
-Pages listed in `children` appear first, in the specified order. Any remaining pages not listed are appended after, sorted by the default rules.
+Listed pages appear first in order. Any unlisted pages are appended after.
 
-## Sort order
+### Assets
 
-When no `children` frontmatter is specified, pages are sorted by:
+Non-markdown files (images, PDFs, etc.) placed in the content directory are served in dev and copied to the build output. Reference them with relative paths:
 
-1. **Kind** — folders appear before documents
-2. **Modified time** — newest files first (by filesystem mtime)
+```markdown
+![Diagram](./architecture.png)
+```
 
-This means recently edited pages naturally float to the top.
+## Linking between pages
 
-## URLs
+Three ways to link, all resolve the same way:
 
-Each file maps directly to a URL:
+| Syntax | Example | Best for |
+|--------|---------|----------|
+| Wiki link | `[[deployment]]` | Quick cross-references in prose |
+| Wiki link with text | `[[deployment\|Deploy guide]]` | Custom display text |
+| Relative .md link | `[Deploy guide](./deployment.md)` | IDE click-through |
 
-| File | URL |
-|------|-----|
-| `index.md` | `/` |
-| `overview.md` | `/overview` |
-| `guides/index.md` | `/guides` |
-| `guides/setup.md` | `/guides/setup` |
+Wiki links are the fastest to type. Relative `.md` links have the advantage of working in GitHub's markdown preview and in your editor's go-to-definition.
 
-The filename minus `.md` becomes the URL path. `index.md` files resolve to their parent directory.
+All internal links are validated — `kb build` and `kb validate` will report any broken references.
 
-## Configuration
+## Frontmatter
 
-The full `kb.config.ts` options:
+| Field | Type | Where | Description |
+|-------|------|-------|-------------|
+| `title` | `string` | Any page | Page title. Falls back to the filename. |
+| `description` | `string` | Any page | Subtitle shown below the title. |
+| `children` | `string[]` | `index.md` only | Sidebar order for child pages. |
+
+## Deploying
+
+```bash
+kb build                    # outputs to dist/
+```
+
+Build validates all links automatically. For subpath deployments (e.g. GitHub Pages project sites):
+
+```bash
+kb build --base /repo-name
+```
+
+### CI
+
+Run validation in CI to catch broken links before deploy:
+
+```bash
+kb validate                 # exit code 1 on errors
+```
+
+Or rely on `kb build` which validates after generating — a non-zero exit code will fail your CI pipeline.
+
+## Configuration reference
 
 ```typescript
 import { defineConfig } from "@mattlenz/kb";
 
 export default defineConfig({
-  // Site title — shown in the sidebar root and <title> tag.
+  // Site title — sidebar root and <title> tag.
   // Default: "Wiki"
-  title: "My Docs",
+  title: "My Wiki",
 
-  // Content directory, relative to the repo root.
+  // Content directory, relative to repo root.
   // Default: "docs" if it exists, otherwise "."
   contentDir: "docs",
 
-  // Base path for subpath deployments (e.g. GitHub Pages).
+  // Base path for subpath deployments.
   // Default: ""
   base: "/my-repo",
 
   // Additional Shiki languages for syntax highlighting.
-  // A set of common languages is included by default.
+  // Common languages are included by default.
   languages: ["ruby", "elixir", "hcl"],
 });
 ```
 
 ### Default languages
 
-Syntax highlighting is included out of the box for: TypeScript, JavaScript, TSX, JSX, JSON, Bash, Shell, YAML, Markdown, CSS, HTML, Python, Go, Rust, Swift, SQL, GraphQL, Diff, and TOML.
+Syntax highlighting is included for: TypeScript, JavaScript, TSX, JSX, JSON, Bash, Shell, YAML, Markdown, CSS, HTML, Python, Go, Rust, Swift, SQL, GraphQL, Diff, and TOML.
 
-Add more via the `languages` config. Any language [supported by Shiki](https://shiki.style/languages) can be added.
+Add more via the `languages` config. Any [Shiki language](https://shiki.style/languages) is supported.
 
-## CLI
+## CLI reference
 
 ```bash
 kb dev                  # Start dev server with live reload
-kb build                # Build static site to dist/ (validates links after)
-kb validate             # Check all pages render and all links resolve
+kb build                # Build static site (validates links after)
+kb validate             # Check all pages render and links resolve
 
 # Options
 kb dev --port 3000      # Custom port
@@ -152,19 +162,13 @@ kb dev --content-dir .  # Override content directory
 The core library is available as `@mattlenz/kb`:
 
 ```typescript
-import { createKb, resolveConfig, renderMarkdown } from "@mattlenz/kb";
+import { createKb, resolveConfig } from "@mattlenz/kb";
 
 const config = resolveConfig(process.cwd());
 const kb = createKb(config);
 
-// Get the full tree
 const tree = kb.getTree();
-
-// Get a single page with rendered content
 const node = await kb.getNode("/guides/deployment");
-console.log(node?.hast);  // HAST (HTML AST)
-console.log(node?.headings);  // Extracted headings
-console.log(node?.breadcrumbs);  // Navigation breadcrumbs
 ```
 
 The Vite plugin is available as `@mattlenz/kb/vite`:
@@ -172,7 +176,6 @@ The Vite plugin is available as `@mattlenz/kb/vite`:
 ```typescript
 import { kb } from "@mattlenz/kb/vite";
 
-// Use in a custom Vite config
 export default {
   plugins: [kb({ title: "My Wiki" })],
 };
