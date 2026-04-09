@@ -1,6 +1,7 @@
 export interface DocumentMeta {
   title: string;
   description?: string;
+  updated_at?: string;
 }
 
 export interface Breadcrumb {

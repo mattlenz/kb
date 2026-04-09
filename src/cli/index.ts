@@ -8,6 +8,7 @@
  * Usage:
  *   kb dev       Start development server
  *   kb build     Build for production
+ *   kb tree      Print content hierarchy
  *   kb validate  Validate wiki content
  */
 
@@ -17,6 +18,7 @@ import { parseArgs } from "node:util";
 import { createKb, resolveConfig, loadConfigFile, type ResolvedKbConfig } from "../core/index.ts";
 import { extractInternalLinks } from "../core/parser.ts";
 import { kb as kbPlugin } from "../vite/index.ts";
+import type { KnowledgeNode } from "../core/types.ts";
 
 async function validateWiki(config: ResolvedKbConfig): Promise<{ totalErrors: number }> {
   const kb = createKb(config);
@@ -61,6 +63,38 @@ async function validateWiki(config: ResolvedKbConfig): Promise<{ totalErrors: nu
   return { totalErrors };
 }
 
+function formatDate(value: unknown): string {
+  if (!value) return "";
+  if (value instanceof Date) return value.toISOString().slice(0, 10);
+  return String(value);
+}
+
+function formatNode(title: string, date: string, description?: string): string {
+  const datePart = date ? ` (${date})` : "";
+  const descPart = description ? ` — ${description}` : "";
+  return `"${title}"${datePart}${descPart}`;
+}
+
+function printTree(nodes: KnowledgeNode[], contentDir: string, depth = 0) {
+  const indent = "  ".repeat(depth);
+  for (const node of nodes) {
+    const segments = node.slug.split("/").filter(Boolean);
+    const title = node.meta?.title || node.name;
+    const dateStr = formatDate(node.meta?.updated_at);
+    const desc = node.meta?.description || undefined;
+
+    if (node.kind === "folder") {
+      const dirName = segments[segments.length - 1] || path.basename(contentDir);
+      console.log(`${indent}${dirName}/`);
+      console.log(`${indent}  index.md — ${formatNode(title, dateStr, desc)}`);
+      if (node.children) printTree(node.children, contentDir, depth + 1);
+    } else {
+      const fileName = segments[segments.length - 1] + ".md";
+      console.log(`${indent}${fileName} — ${formatNode(title, dateStr, desc)}`);
+    }
+  }
+}
+
 const { values, positionals } = parseArgs({
   args: process.argv.slice(2),
   options: {
@@ -95,6 +129,7 @@ function printHelp() {
   Commands:
     kb dev        Start development server
     kb build      Build for production
+    kb tree       Print content hierarchy
     kb validate   Validate wiki content
 
   Options:
@@ -153,6 +188,35 @@ async function main() {
       // Validate links after build
       const buildConfig = resolveConfig(rootDir, userConfig);
       await validateWiki(buildConfig);
+      break;
+    }
+
+    case "tree": {
+      const config = resolveConfig(rootDir, userConfig);
+
+      if (!fs.existsSync(config.contentDir)) {
+        console.error(`[kb] Content directory not found: ${config.contentDir}`);
+        process.exit(1);
+      }
+
+      const kb = createKb(config);
+      const tree = kb.getTree();
+
+      // Read root index.md for title + description
+      const rootIndexPath = path.join(config.contentDir, "index.md");
+      let rootTitle = path.basename(config.contentDir);
+      let rootDesc: string | undefined;
+      if (fs.existsSync(rootIndexPath)) {
+        const matter = (await import("gray-matter")).default;
+        const { data } = matter(fs.readFileSync(rootIndexPath, "utf-8"));
+        rootTitle = data.title || rootTitle;
+        rootDesc = data.description || undefined;
+      }
+
+      const rootDirName = path.basename(config.contentDir);
+      console.log(`${rootDirName}/`);
+      console.log(`  index.md — ${formatNode(rootTitle, "", rootDesc)}`);
+      printTree(tree, config.contentDir, 1);
       break;
     }
 
