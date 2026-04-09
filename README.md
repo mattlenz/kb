@@ -1,8 +1,6 @@
 # kb
 
-A markdown wiki static site generator powered by Vite.
-
-Drop markdown files in a directory and get a fully rendered site with sidebar navigation, syntax highlighting, and mermaid diagrams.
+A markdown knowledge base. Directories are sections, markdown files are pages. No database, no CMS — edit text files, get a site.
 
 | Light | Dark |
 |-------|------|
@@ -13,27 +11,20 @@ Drop markdown files in a directory and get a fully rendered site with sidebar na
 ```bash
 mkdir my-wiki && cd my-wiki
 echo "# Hello" > index.md
-npx github:mattlenz/kb dev
+kb dev
 # → http://localhost:5173
 ```
 
-## Install
+## Commands
 
 ```bash
-npm install github:mattlenz/kb
+kb dev          # Dev server with live reload
+kb build        # Static site generation (validates links)
+kb create       # Create a new page or section
+kb tree         # Print content hierarchy
+kb validate     # Check pages and links
 ```
 
-## Features
+## Docs
 
-- Sidebar navigation from your file structure
-- Syntax highlighting with light/dark themes
-- Mermaid diagram rendering
-- GitHub Flavored Markdown (tables, task lists, strikethrough)
-- Wiki links — `[[page]]` and `[[page|display text]]`
-- Relative links — `./page.md` resolves correctly
-- Broken link detection on build
-- Static output for deployment anywhere
-
-## Documentation
-
-Run `kb dev` in this repo to browse the full docs, or see [docs/guide.md](docs/guide.md) for how content is organized, linked, and deployed.
+Run `kb dev` in this repo, or read [docs/guide.md](docs/guide.md).
