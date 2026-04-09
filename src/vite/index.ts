@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import fs from "node:fs";
+import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -13,10 +14,21 @@ import {
 import { renderPage, renderNotFoundPage, toTreeNodes, toPageData } from "./render.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const _require = createRequire(import.meta.url);
 
 const ENTRY_PATH = path.resolve(__dirname, "client/entry.js");
 // CSS lives at the package root — resolve from dist/vite/ or src/vite/
 const CSS_PATH = path.resolve(__dirname, "../../styles/global.css");
+
+/** Resolve a package directory from the kb package's own node_modules. */
+function pkgDir(pkg: string): string {
+  let dir = path.dirname(_require.resolve(pkg));
+  while (dir !== path.dirname(dir)) {
+    if (fs.existsSync(path.join(dir, "package.json"))) return dir;
+    dir = path.dirname(dir);
+  }
+  throw new Error(`Cannot find package root for ${pkg}`);
+}
 
 /**
  * Generate the HTML shell with references to bundled assets.
@@ -146,28 +158,25 @@ export function kb(userConfig?: KbConfig): Plugin[] {
       const rawBase = userConfig?.base ?? "";
       base = rawBase === "/" ? "" : rawBase.replace(/\/+$/, "");
 
-      // Ensure all client code resolves to a single copy of Preact so that
-      // @preact/signals can patch the shared options object.  Without this,
-      // consuming projects may end up with two Preact instances (one from
-      // the pre-bundled dep, one resolved from the kb package's own
-      // node_modules) and signal-driven re-renders silently stop working.
-      const preactDeps = [
-        "preact",
-        "preact/hooks",
-        "preact/jsx-runtime",
-        "@preact/signals",
-        "@preact/signals-core",
-      ];
+      // Resolve Preact from the kb package's own node_modules so that
+      // consuming projects (especially npm-linked ones) always get a
+      // single copy.  @preact/signals patches Preact's shared options
+      // object at import time — two copies means the patch misses the
+      // instance the components render with, silently breaking reactivity.
+      const preactDir = pkgDir("preact");
+      const signalsDir = pkgDir("@preact/signals");
+      const signalsCoreDir = pkgDir("@preact/signals-core");
 
       return {
         ...(base ? { base: base + "/" } : {}),
         // Keep Vite's cache out of the user's project directory
         cacheDir: path.join(os.tmpdir(), "kb-vite-" + crypto.createHash("md5").update(process.cwd()).digest("hex").slice(0, 8)),
         resolve: {
-          dedupe: preactDeps,
-        },
-        optimizeDeps: {
-          include: preactDeps,
+          alias: [
+            { find: "@preact/signals-core", replacement: signalsCoreDir },
+            { find: "@preact/signals", replacement: signalsDir },
+            { find: "preact", replacement: preactDir },
+          ],
         },
         // Build the virtual entry in library mode — produces bundled CSS + JS
         build: {
