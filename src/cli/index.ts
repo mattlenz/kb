@@ -8,6 +8,7 @@
  * Usage:
  *   kb dev       Start development server
  *   kb build     Build for production
+ *   kb create    Create a new page or section
  *   kb tree      Print content hierarchy
  *   kb validate  Validate wiki content
  */
@@ -129,6 +130,7 @@ function printHelp() {
   Commands:
     kb dev        Start development server
     kb build      Build for production
+    kb create     Create a new page or section
     kb tree       Print content hierarchy
     kb validate   Validate wiki content
 
@@ -230,6 +232,43 @@ async function main() {
 
       const { totalErrors } = await validateWiki(config);
       if (totalErrors > 0) process.exit(1);
+      break;
+    }
+
+    case "create": {
+      const target = positionals[1];
+      if (!target) {
+        console.error("Usage: kb create <path>       (page)");
+        console.error("       kb create <path>/      (section)");
+        process.exit(1);
+      }
+
+      const isSection = target.endsWith("/");
+      const config = resolveConfig(rootDir, userConfig);
+      const contentDirBase = path.relative(rootDir, config.contentDir);
+      // Strip content dir prefix (e.g. "docs/") and .md suffix if provided via tab completion
+      const clean = target
+        .replace(/\/+$/, "")
+        .replace(/\.md$/, "")
+        .replace(new RegExp(`^${contentDirBase}\/`), "");
+      const fullPath = isSection
+        ? path.join(config.contentDir, clean, "index.md")
+        : path.join(config.contentDir, clean + ".md");
+
+      if (fs.existsSync(fullPath)) {
+        console.error(`[kb] Already exists: ${fullPath}`);
+        process.exit(1);
+      }
+
+      const slug = clean.split("/").pop() || clean;
+      const title = slug.replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+      const today = new Date().toISOString().slice(0, 10);
+
+      const content = `---\ntitle: "${title}"\ndescription: \ncreated_at: ${today}\nupdated_at: ${today}\n---\n`;
+
+      fs.mkdirSync(path.dirname(fullPath), { recursive: true });
+      fs.writeFileSync(fullPath, content);
+      console.log(`[kb] Created ${path.relative(process.cwd(), fullPath)}`);
       break;
     }
 
