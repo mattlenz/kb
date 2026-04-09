@@ -146,10 +146,29 @@ export function kb(userConfig?: KbConfig): Plugin[] {
       const rawBase = userConfig?.base ?? "";
       base = rawBase === "/" ? "" : rawBase.replace(/\/+$/, "");
 
+      // Ensure all client code resolves to a single copy of Preact so that
+      // @preact/signals can patch the shared options object.  Without this,
+      // consuming projects may end up with two Preact instances (one from
+      // the pre-bundled dep, one resolved from the kb package's own
+      // node_modules) and signal-driven re-renders silently stop working.
+      const preactDeps = [
+        "preact",
+        "preact/hooks",
+        "preact/jsx-runtime",
+        "@preact/signals",
+        "@preact/signals-core",
+      ];
+
       return {
         ...(base ? { base: base + "/" } : {}),
         // Keep Vite's cache out of the user's project directory
         cacheDir: path.join(os.tmpdir(), "kb-vite-" + crypto.createHash("md5").update(process.cwd()).digest("hex").slice(0, 8)),
+        resolve: {
+          dedupe: preactDeps,
+        },
+        optimizeDeps: {
+          include: preactDeps,
+        },
         // Build the virtual entry in library mode — produces bundled CSS + JS
         build: {
           rollupOptions: {
