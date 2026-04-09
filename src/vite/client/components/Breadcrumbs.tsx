@@ -1,4 +1,4 @@
-import * as preact from "preact";
+import type { JSX } from "preact";
 import { base } from "../store.ts";
 import { navigate } from "../navigate.ts";
 import { ChevronIcon } from "./icons.tsx";
@@ -13,7 +13,7 @@ export function Breadcrumbs({ breadcrumbs }: { breadcrumbs?: Breadcrumb[] }) {
     navigate(slug);
   };
 
-  const items: preact.JSX.Element[] = [];
+  const items: JSX.Element[] = [];
   ancestors.forEach((crumb, i) => {
     if (i > 0) {
       items.push(<span class="kb-breadcrumb-sep"><ChevronIcon /></span>);
